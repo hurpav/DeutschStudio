@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Centrální Generátor Domina z GitHub Databáze v2.2</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #f0f4f8; padding: 20px; color: #333; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; }
+        .setup-box { background: #ecf0f1; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+        select, button { padding: 10px; font-size: 16px; border-radius: 4px; border: 1px solid #bdc3c7; }
+        button { background: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #219653; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #34495e; color: white; }
+        .status { font-weight: bold; color: #2980b9; }
+        code { background: #eee; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎲 Obrázkové Domino v2.2 (Fix cest obrázků & Unikátní karty)</h1>
+    
+    <div class="setup-box">
+        <div>
+            <label><strong>Vyberte téma z databáze:</strong></label>
+            <select id="themeSelect">
+                <option value="">-- Vyberte téma --</option>
+                <option value="schulsachen.json">Schulsachen (Školní pomůcky)</option>
+                <option value="familie.json">Familie (Rodina)</option>
+                <option value="berufe.json">Berufe (Povolání)</option>
+                <option value="hobbys.json">Hobbys (Záliby)</option>
+                <option value="sport.json">Sportarten (Sporty)</option>
+                <option value="wochentage.json">Wochentage (Dny v týdnu)</option>
+                <option value="essen.json">Essen (Jídlo)</option>
+                <option value="stundenplan.json">Stundenplan / Monate</option>
+            </select>
+        </div>
+        <div id="statusMessage" class="status">Čekám na výběr tématu...</div>
+        <button id="generateBtn">🖨️ Vygenerovat PDF Domina</button>
+        
+        <a href="../index.html" style="text-decoration: none;">
+            <button type="button" style="background: #7f8c8d;">🏠 Dashboard</button>
+        </a>
+    </div>
+
+    <h3>Kompletní výpis slovíček v databázi:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Německy (DE)</th>
+                <th>Česky (CZ)</th>
+                <th>Obrázek (cesta)</th>
+            </tr>
+        </thead>
+        <tbody id="vocabTable">
+            <tr><td colspan="4" style="text-align:center; color:#7f8c8d;">Žádná data nejsou načtena</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const githubUser = "hurpav"; 
+    const repoName = "wortschatz";
+
+    let loadedWords = [];
+    let currentTitle = "";
+    let currentFolder = ""; 
+
+    function odstranDiakritiku(text) {
+        return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("themeSelect").addEventListener("change", loadDataFromGitHub);
+        document.getElementById("generateBtn").addEventListener("click", generatePDF);
+    });
+
+    async function loadDataFromGitHub() {
+        const select = document.getElementById("themeSelect");
+        const filename = select.value;
+        const status = document.getElementById("statusMessage");
+        
+        if (!filename) return;
+
+        status.innerText = "🔄 Stahuji data z GitHubu...";
+        currentFolder = filename.replace('.json', ''); 
+
+        const url = `https://raw.githubusercontent.com/${githubUser}/${repoName}/main/data/${filename}?_ts=` + new Date().getTime();
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error("Soubor se nepodařilo ve složce /data/ najít.");
+            
+            const data = await response.json();
+            
+            let rawData = data[currentFolder] || data.words || data.slovicka || data;
+            if (rawData && !Array.isArray(rawData) && typeof rawData === 'object') {
+                const foundKey = Object.keys(rawData).find(k => Array.isArray(rawData[k]));
+                loadedWords = foundKey ? rawData[foundKey] : [];
+            } else if (Array.isArray(rawData)) {
+                loadedWords = rawData;
+            } else {
+                loadedWords = [];
+            }
+            
+            currentTitle = data.title || data.theme || currentFolder;
+
+            if (loadedWords.length === 0) {
+                throw new Error("V JSONu nebyla nalezena žádná slovíčka.");
+            }
+
+            // Ochrana před duplicitními záznamy přímo v JSONu
+            let unikatniSlovicka = [];
+            let videneCestiny = new Set();
+            loadedWords.forEach(w => {
+                let czKlic = (w.cz || '').trim().toLowerCase();
+                if (!videneCestiny.has(czKlic) && czKlic !== '') {
+                    videneCestiny.add(czKlic);
+                    unikatniSlovicka.push(w);
+                }
+            });
+            loadedWords = unikatniSlovicka;
+
+            let html = "";
+            loadedWords.forEach((word, index) => {
+                const deWord = word.artikel ? `${word.artikel} ${word.de}` : (word.de || '');
+                
+                // INTELIGENTNÍ OPRAVA ZOBRAZENÍ CESTY: Pokud už obsahuje "images/", nezdvojujeme ji
+                let zobrazitCestu = word.image || '';
+                if (!zobrazitCestu.startsWith('images/')) {
+                    zobrazitCestu = `images/${currentFolder}/${zobrazitCestu}`;
+                }
+
+                html += `<tr>
+                    <td style="color: #7f8c8d; font-size: 14px;">${index + 1}</td>
+                    <td><strong>${deWord}</strong></td>
+                    <td>${word.cz || ''}</td>
+                    <td><code>${zobrazitCestu}</code></td>
+                </tr>`;
+            });
+            document.getElementById("vocabTable").innerHTML = html;
+            status.innerText = `✅ Úspěšně načteno: ${currentTitle} (Nalezeno ${loadedWords.length} unikátních slovíček)`;
+
+        } catch (error) {
+            console.error(error);
+            status.innerText = "❌ Chyba: " + error.message;
+            alert("Nepodařilo se načíst data. " + error.message);
+        }
+    }
+
+    function toDataURL(cesta) {
+        return new Promise((resolve, reject) => {
+            let finalniUrl = cesta;
+
+            // Pokud cesta z JSONu nezačíná doménou, poskládáme plnou GitHub URL adresu
+            if (!finalniUrl.startsWith('http://') && !finalniUrl.startsWith('https://')) {
+                // Pokud v JSONu chybí předpona "images/", korektně ji doplníme
+                if (!finalniUrl.startsWith('images/')) {
+                    finalniUrl = `images/${currentFolder}/${finalniUrl}`;
+                }
+                finalniUrl = `https://raw.githubusercontent.com/${githubUser}/${repoName}/main/${finalniUrl}`;
+            }
+
+            const img = new Image();
+            img.crossOrigin = 'Anonymous'; 
+            
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                
+                const dataURL = canvas.toDataURL('image/png');
+                resolve(dataURL);
+            };
+            
+            img.onerror = function() {
+                reject(new Error(`Nepodařilo se načíst obrázek z URL: ${finalniUrl}`));
+            };
+            
+            img.src = finalniUrl + '?_ts=' + new Date().getTime();
+        });
+    }
+
+    async function generatePDF() {
+        if (loadedWords.length === 0) {
+            alert("Nejprve vyberte téma a načtěte slovíčka!");
+            return;
+        }
+
+        // Domino se sestaví z max 16 unikátních slovíček
+        const maxCards = Math.min(loadedWords.length, 16);
+        const activeWords = loadedWords.slice(0, maxCards);
+
+        if (maxCards < 4) {
+            alert("Pro vygenerování uzavřeného domina potřebujete alespoň 4 unikátní slovíčka.");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+        doc.setFont("Courier", "normal");
+        doc.setFontSize(16);
+        
+        const cistyTitul = odstranDiakritiku(currentTitle.toUpperCase());
+        doc.text(`OBRAZKOVE DOMINO: ${cistyTitul}`, 148, 14, { align: "center" });
+
+        // Lineární propojení karet do čistého velkého kruhu bez duplicit
+        let dominoCards = [];
+        for (let i = 0; i < maxCards; i++) {
+            let next = (i === maxCards - 1) ? activeWords[0] : activeWords[i + 1];
+            
+            dominoCards.push({ 
+                leftText: activeWords[i].cz || '', 
+                leftImg: activeWords[i].image || '', 
+                rightText: next.artikel ? `${next.artikel} ${next.de}` : (next.de || '')
+            });
+        }
+
+        // Mřížka karet na stránce
+        const cardWidth = 68;   
+        const cardHeight = 35;  
+        const startX = 14;      
+        const startY = 24;      
+        const gapX = 3;         
+        const gapY = 6;         
+
+        for (let index = 0; index < dominoCards.length; index++) {
+            let card = dominoCards[index];
+            let col = index % 4;
+            let row = Math.floor(index / 4); 
+            let x = startX + col * (cardWidth + gapX);
+            let y = startY + row * (cardHeight + gapY);
+
+            doc.setDrawColor(30, 30, 30).setLineWidth(0.4).setFillColor(255, 255, 255).rect(x, y, cardWidth, cardHeight, "FD");
+            
+            doc.setDrawColor(120, 120, 120).setLineWidth(0.2).setLineDashPattern([1.5, 1.5], 0);
+            doc.line(x + cardWidth / 2, y, x + cardWidth / 2, y + cardHeight);
+            doc.setLineDashPattern([], 0);
+
+            // LEVÁ STRANA (Čeština bez diakritiky)
+            doc.setFontSize(8).setTextColor(90);
+            const maxHalfWidth = (cardWidth / 2) - 5;
+            
+            let textBezDiakritiky = odstranDiakritiku(card.leftText);
+            let splitLeftText = doc.splitTextToSize(textBezDiakritiky, maxHalfWidth);
+            doc.text(splitLeftText, x + (cardWidth / 4), y + 4, { align: "center", baseline: "top" });
+
+            if (card.leftImg) {
+                try {
+                    const imgData = await toDataURL(card.leftImg);
+                    const imgSize = 17; 
+                    const imgX = x + (cardWidth / 4) - (imgSize / 2); 
+                    const imgY = y + 13; 
+                    doc.addImage(imgData, 'PNG', imgX, imgY, imgSize, imgSize);
+                } catch (e) {
+                    console.error("Chyba stažení/vykreslení obrázku:", e.message);
+                }
+            }
+
+            // PRAVÁ STRANA (Němčina s členem)
+            doc.setFontSize(9).setTextColor(0);
+            const splitRightText = doc.splitTextToSize(card.rightText, maxHalfWidth); 
+            doc.text(splitRightText, x + (cardWidth * 0.75), y + (cardHeight / 2), { align: "center", baseline: "middle" });
+
+            doc.setFontSize(5);
+            doc.setTextColor(190, 190, 190);
+            doc.text((index + 1).toString(), x + 1.5, y + cardHeight - 1.5);
+        }
+
+        doc.setFontSize(8).setTextColor(150);
+        doc.text(`Vytisknete a rozstrihejte podle plnych vnejsich car. Karty tvori uzavreny kruh o ${maxCards} prvcich.`, 148, 195, { align: "center" });
+
+        const bezpecnyNazev = odstranDiakritiku(currentTitle.toLowerCase()).replace(/[^a-z0-9]/g, "_");
+        doc.save(`domino-${bezpecnyNazev}.pdf`);
+    }
+</script>
+
+</body>
+</html>
