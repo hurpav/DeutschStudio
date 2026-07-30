@@ -1,0 +1,26 @@
+[
+  {
+    "id": "2.2",
+    "buch": "Maximal interaktiv 1",
+    "klasse": [
+      "7",
+      "8"
+    ],
+    "thema": "Schulsachen",
+    "typ": "ucebnice",
+    "file": "slovicka/maximal1/2.2_schulsachen.json"
+  },
+
+  {
+    "id": "vlastni_01",
+    "buch": "Vlastní materiály",
+    "klasse": [
+      "7",
+      "8",
+      "9"
+    ],
+    "thema": "Reisen",
+    "typ": "vlastni",
+    "file": "slovicka/vlastni/reisen.json"
+  }
+]

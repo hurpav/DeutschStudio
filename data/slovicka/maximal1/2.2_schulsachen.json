@@ -1,0 +1,220 @@
+{
+  "meta": {
+    "tema": "Schulsachen",
+    "niveau": "A1",
+    "typ": "tema",
+    "popis": "Školní potřeby a předměty ve škole"
+  },
+
+  "words": [
+    {
+      "id": 1,
+      "artikel": "der",
+      "de": "Bleistift",
+      "plural": "die Bleistifte",
+      "cz": "tužka",
+      "slovni_druh": "substantivum",
+      "image": {
+        "available": true,
+        "file": "assets/images/schulsachen/bleistift.png"
+      },
+      "audio": {
+        "available": false,
+        "file": null
+      },
+      "sentence": {
+        "de": "Ich brauche einen Bleistift.",
+        "cz": "Potřebuji tužku."
+      }
+    },
+
+    {
+      "id": 2,
+      "artikel": "der",
+      "de": "Buntstift",
+      "plural": "die Buntstifte",
+      "cz": "pastelka",
+      "slovni_druh": "substantivum",
+      "image": {
+        "available": true,
+        "file": "assets/images/schulsachen/buntstift.png"
+      },
+      "audio": {
+        "available": false,
+        "file": null
+      },
+      "sentence": {
+        "de": "Der Buntstift ist rot.",
+        "cz": "Pastelka je červená."
+      }
+    },
+
+    {
+      "id": 3,
+      "artikel": "das",
+      "de": "Buch",
+      "plural": "die Bücher",
+      "cz": "kniha",
+      "slovni_druh": "substantivum",
+      "image": {
+        "available": true,
+        "file": "assets/images/schulsachen/buch.png"
+      },
+      "audio": {
+        "available": false,
+        "file": null
+      },
+      "sentence": {
+        "de": "Das Buch liegt auf dem Tisch.",
+        "cz": "Kniha leží na stole."
+      }
+    },
+
+    {
+      "id": 4,
+      "artikel": "der",
+      "de": "Füller",
+      "plural": "die Füller",
+      "cz": "plnicí pero",
+      "slovni_druh": "substantivum",
+      "image": {
+        "available": true,
+        "file": "assets/images/schulsachen/fueller.png"
+      },
+      "audio": {
+        "available": false,
+        "file": null
+      },
+      "sentence": {
+        "de": "Mein Füller ist blau.",
+        "cz": "Moje pero je modré."
+      }
+    },
+
+    {
+      "id": 5,
+      "artikel": "das",
+      "de": "Heft",
+      "plural": "die Hefte",
+      "cz": "sešit",
+      "slovni_druh": "substantivum",
+      "image": {
+        "available": true,
+        "file": "assets/images/schulsachen/heft.png"
+      },
+      "audio": {
+        "available": false,
+        "file": null
+      },
+      "sentence": {
+        "de": "Das Heft ist in der Schultasche.",
+        "cz": "Sešit je v aktovce."
+      }
+    },
+
+    {
+      "id": 6,
+      "artikel": "der",
+      "de": "Kugelschreiber",
+      "plural": "die Kugelschreiber",
+      "cz": "pero / propiska",
+      "slovni_druh": "substantivum",
+      "image": {
+        "available": true,
+        "file": "assets/images/schulsachen/kugelschreiber.png"
+      },
+      "audio": {
+        "available": false,
+        "file": null
+      },
+      "sentence": {
+        "de": "Ich schreibe mit einem Kugelschreiber.",
+        "cz": "Píšu propiskou."
+      }
+    },
+
+    {
+      "id": 7,
+      "artikel": "das",
+      "de": "Lineal",
+      "plural": "die Lineale",
+      "cz": "pravítko",
+      "slovni_druh": "substantivum",
+      "image": {
+        "available": true,
+        "file": "assets/images/schulsachen/lineal.png"
+      },
+      "audio": {
+        "available": false,
+        "file": null
+      },
+      "sentence": {
+        "de": "Das Lineal ist lang.",
+        "cz": "Pravítko je dlouhé."
+      }
+    },
+
+    {
+      "id": 8,
+      "artikel": "das",
+      "de": "Mäppchen",
+      "plural": "die Mäppchen",
+      "cz": "penál",
+      "slovni_druh": "substantivum",
+      "image": {
+        "available": true,
+        "file": "assets/images/schulsachen/maeppchen.png"
+      },
+      "audio": {
+        "available": false,
+        "file": null
+      },
+      "sentence": {
+        "de": "Mein Mäppchen ist voll.",
+        "cz": "Můj penál je plný."
+      }
+    },
+
+    {
+      "id": 9,
+      "artikel": "der",
+      "de": "Rucksack",
+      "plural": "die Rucksäcke",
+      "cz": "batoh",
+      "slovni_druh": "substantivum",
+      "image": {
+        "available": true,
+        "file": "assets/images/schulsachen/rucksack.png"
+      },
+      "audio": {
+        "available": false,
+        "file": null
+      },
+      "sentence": {
+        "de": "Das ist mein Rucksack.",
+        "cz": "To je můj batoh."
+      }
+    },
+
+    {
+      "id": 10,
+      "artikel": "die",
+      "de": "Schere",
+      "plural": "die Scheren",
+      "cz": "nůžky",
+      "slovni_druh": "substantivum",
+      "image": {
+        "available": true,
+        "file": "assets/images/schulsachen/schere.png"
+      },
+      "audio": {
+        "available": false,
+        "file": null
+      },
+      "sentence": {
+        "de": "Die Schere ist scharf.",
+        "cz": "Nůžky jsou ostré."
+      }
+    }
+  ]
+}
