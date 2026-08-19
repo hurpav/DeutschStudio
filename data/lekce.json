@@ -1,9 +1,9 @@
 [
   {
     "id": "2.2",
-    "buch": "Maximal interaktiv 1",
-    "klasse": "7",
-    "thema": "Schulsachen",
-    "file": "data/slovicka/maximal1/2.2_schulsachen.json"
+    "title": "Schulsachen",
+    "ucebnice": "maximal1",
+    "trida": "7.",
+    "file": "2.2_schulsachen.json"
   }
 ]

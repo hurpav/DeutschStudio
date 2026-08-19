@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domino – Obrázek → DE</title>
+
+    <link rel="stylesheet" href="../../css/style.css">
+
+    <!-- jsPDF -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="../../assets/fonts/DejaVuSans.js"></script>
+
+    <style>
+        .domino-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #fff;
+            border: 1px solid #ddd;
+        }
+        .domino-img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            background: #f7f7f7;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        .masculine { border-left: 6px solid #3b82f6; }
+        .feminine { border-left: 6px solid #ec4899; }
+        .neuter { border-left: 6px solid #10b981; }
+    </style>
+</head>
+
+<body class="bg-slate-100 p-6">
+
+    <div class="ds-panel">

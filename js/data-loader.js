@@ -1,13 +1,16 @@
 // Načtení seznamu lekcí
 export async function loadLessonList() {
-    const response = await fetch("data/lekce.json");
-    if (!response.ok) throw new Error("Nelze načíst data/lekce.json");
+    const response = await fetch("../data/slovicka/vlastní/lekce.json");
+    if (!response.ok) throw new Error("Nelze načíst lekce.json");
     return await response.json();
 }
 
 // Načtení konkrétní lekce
 export async function loadLessonData(lesson) {
-    const response = await fetch(lesson.file);
-    if (!response.ok) throw new Error(`Nelze načíst ${lesson.file}`);
+    // Dynamická cesta podle učebnice
+    const fullPath = `../data/slovicka/${lesson.ucebnice}/${lesson.file}`;
+
+    const response = await fetch(fullPath);
+    if (!response.ok) throw new Error(`Nelze načíst ${fullPath}`);
     return await response.json();
 }
