@@ -11,41 +11,36 @@
 
 <body>
 
-<header class="header">
-    <div>
-        <h1>🇩🇪 DEUTSCH STUDIO 26. ZŠ Plzeň</h1>
-        <p>Digitální asistent učitele němčiny</p>
-    </div>
+<!-- HLAVNÍ HLAVIČKA -->
+<header class="ds-panel" style="margin-top: 0;">
+    <h1 class="ds-title">🇩🇪 DEUTSCH STUDIO 26. ZŠ Plzeň</h1>
+    <p>Digitální asistent učitele němčiny</p>
 
-    <div class="teacher-info">
+    <div style="margin-top: 10px; display: flex; gap: 12px;">
         <span>7.–9. třída</span>
         <span>A1–A2</span>
     </div>
 </header>
 
 
-<main class="dashboard">
+<main>
 
+    <!-- VÝBĚR LEKCE -->
+    <section class="ds-panel">
+        <h2 class="ds-title">📚 Výběr lekce</h2>
 
-    <!-- Výběr učebnice a lekce -->
-
-    <section class="panel lesson-panel">
-
-        <h2>📚 Výběr lekce</h2>
-
-        <div class="selectors">
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
 
             <label>
-                Učebnice
+                Učebnice<br>
                 <select id="book-select">
                     <option>Maximal interaktiv 1</option>
                     <option>Maximal interaktiv 2</option>
                 </select>
             </label>
 
-
             <label>
-                Lekce
+                Lekce<br>
                 <select id="lesson-select">
                     <option>1.1</option>
                     <option>1.2 - Hobbys</option>
@@ -56,9 +51,8 @@
                 </select>
             </label>
 
-
             <label>
-                Třída
+                Třída<br>
                 <select id="class-select">
                     <option>7. třída</option>
                     <option>8. třída</option>
@@ -68,136 +62,91 @@
 
         </div>
 
-
-        <div class="lesson-info">
-
-            <h3 id="lesson-title">
-                Lekce 1.2 - Hobbys
-            </h3>
-
-            <p>
-                Slovní zásoba:
-                <strong id="word-count">0</strong> slov
-            </p>
-
+        <div style="margin-top: 20px;">
+            <h3 id="lesson-title">Lekce 1.2 - Hobbys</h3>
+            <p>Slovní zásoba: <strong id="word-count">0</strong> slov</p>
         </div>
-
     </section>
 
 
+    <!-- AKTIVITY -->
+<section class="ds-panel">
+    <h2 class="ds-title">🎮 Aktivity</h2>
 
-    <!-- Aktivity -->
+    <div class="ds-grid">
 
-    <section class="panel">
-
-        <h2>🎮 Aktivity</h2>
-
-
-        <div class="activity-grid">
-
-
-            <div class="activity-card">
-                <h3>🁢 Domino</h3>
-                <p>Řetěz slovíček</p>
-                <button>
-                    Spustit
-                </button>
-            </div>
-
-
-            <div class="activity-card">
-                <h3>🔺 Trimino</h3>
-                <p>Trojúhelníkové puzzle</p>
-                <button>
-                    Spustit
-                </button>
-            </div>
-
-
-            <div class="activity-card">
-                <h3>🚢 Lodě</h3>
-                <p>Procvičování slovní zásoby</p>
-                <button>
-                    Spustit
-                </button>
-            </div>
-
-
-            <div class="activity-card">
-                <h3>🎲 Riskuj</h3>
-                <p>Jeopardy hra</p>
-                <button>
-                    Spustit
-                </button>
-            </div>
-
-
-            <div class="activity-card">
-                <h3>🃏 Kartičky</h3>
-                <p>Flashcards</p>
-                <button>
-                    Spustit
-                </button>
-            </div>
-
-
-            <div class="activity-card">
-                <h3>🖼️ Obrázkový slovníček</h3>
-                <p>Obrázky + slovíčka + tisk / procvičení</p>
-                <button>
-        Vytvořit
-    </button>
-</div>
-
-
-            <div class="activity-card">
-                <h3>📝 Test</h3>
-                <p>Kontrola znalostí</p>
-                <button>
-                    Vytvořit
-                </button>
-            </div>
-
-
+        <div class="ds-card-dashboard" onclick="openDomino()">
+            <div class="ds-icon">🁢</div>
+            <div class="ds-card-title">Domino</div>
+            <div class="ds-card-desc">Řetěz slovíček</div>
         </div>
 
-    </section>
+        <div class="ds-card-dashboard" onclick="openTrimino()">
+            <div class="ds-icon">🔺</div>
+            <div class="ds-card-title">Trimino</div>
+            <div class="ds-card-desc">Trojúhelníkové puzzle</div>
+        </div>
+
+        <div class="ds-card-dashboard" onclick="openSchiffe()">
+            <div class="ds-icon">🚢</div>
+            <div class="ds-card-title">Lodě</div>
+            <div class="ds-card-desc">Procvičování slovní zásoby</div>
+        </div>
+
+        <div class="ds-card-dashboard" onclick="openRiskuj()">
+            <div class="ds-icon">🎲</div>
+            <div class="ds-card-title">Riskuj</div>
+            <div class="ds-card-desc">Jeopardy hra</div>
+        </div>
+
+        <div class="ds-card-dashboard" onclick="openFlashcards()">
+            <div class="ds-icon">🃏</div>
+            <div class="ds-card-title">Kartičky</div>
+            <div class="ds-card-desc">Flashcards</div>
+        </div>
+
+        <div class="ds-card-dashboard" onclick="openPictureDictionary()">
+            <div class="ds-icon">🖼️</div>
+            <div class="ds-card-title">Obrázkový slovníček</div>
+            <div class="ds-card-desc">Obrázky + slovíčka + tisk</div>
+        </div>
+
+        <div class="ds-card-dashboard" onclick="openTest()">
+            <div class="ds-icon">📝</div>
+            <div class="ds-card-title">Test</div>
+            <div class="ds-card-desc">Kontrola znalostí</div>
+        </div>
+
+    </div>
+</section>
 
 
 
-    <!-- Statistiky -->
+    <!-- STATISTIKY -->
+    <section class="ds-panel">
+        <h2 class="ds-title">📊 Přehled</h2>
 
-    <section class="panel statistics">
-
-        <h2>📊 Přehled</h2>
-
-        <div class="stats-grid">
+        <div style="display: flex; gap: 40px; margin-top: 10px;">
 
             <div>
-                <strong id="total-words">0</strong>
+                <strong id="total-words">0</strong><br>
                 <span>slov celkem</span>
             </div>
 
-
             <div>
-                <strong id="lesson-number">0</strong>
+                <strong id="lesson-number">0</strong><br>
                 <span>lekcí</span>
             </div>
 
-
             <div>
-                <strong>A1–A2</strong>
+                <strong>A1–A2</strong><br>
                 <span>úroveň</span>
             </div>
 
         </div>
-
     </section>
 
-
 </main>
-
-
 
 <script src="js/app.js"></script>
 

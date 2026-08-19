@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obrázkový slovníček</title>
+
+    <link rel="stylesheet" href="../../css/style.css">
+
+    <!-- jsPDF + font -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="../../assets/fonts/DejaVuSans.js"></script>
+</head>
+
+<body class="bg-slate-100 p-6">
+
+    <div class="ds-panel">
+        <h2 class="ds-title">📘 Obrázkový slovníček</h2>
+
+        <div class="flex flex-wrap gap-4 mt-4">
+
+            <!-- Počet obrázků -->
+            <label class="ds-label">
+                Počet obrázků:
+                <select id="countSelect" class="ds-select">
+                    <option value="all">Vše</option>
+                    <option value="8">8</option>
+                    <option value="12">12</option>
+                    <option value="16">16</option>
+                    <option value="20">20</option>
+                </select>
+            </label>
+
+            <!-- Režim -->
+            <label class="ds-label">
+                Režim:
+                <select id="modeSelect" class="ds-select" onchange="generatePreview()">
+                    <option value="practice">Procvičování</option>
+                    <option value="print">Tisk – celý slovníček</option>
+                </select>
+            </label>
+
+            <!-- Typ nápovědy -->
+            <label class="ds-label">
+                Nápověda:
+                <select id="hintSelect" class="ds-select" onchange="generatePreview()">
+                    <option value="none">Žádná</option>
+                    <option value="article">Člen</option>
+                    <option value="first">Počáteční písmeno</option>
+                    <option value="anagram">Anagram</option>
+                    <option value="article_first">Člen + písmeno</option>
+                </select>
+            </label>
+
+        </div>
+
+        <div class="flex gap-4 mt-4">
+            <button class="ds-btn ds-btn-primary" onclick="generatePreview()">Náhled</button>
+            <button class="ds-btn ds-btn-success" onclick="exportToPDF()">PDF</button>
+            <button class="ds-btn ds-btn-secondary" onclick="goBack()">Zpět na dashboard</button>
+        </div>
+    </div>
+
+    <div id="previewArea" class="ds-preview">
+        <div id="exerciseGrid" class="grid grid-cols-2 gap-4"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
