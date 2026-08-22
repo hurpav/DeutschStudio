@@ -378,7 +378,7 @@ export async function exportToPDF() {
 }
 
 export function goBack() {
-    window.location.href = "/dashboard/index.html";
+    window.location.href = "/index.html";
 }
 
 // --------------------------------------------------
