@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Obrázkový slovníček</title>
 
-    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="css/style.css">
 
-    <!-- jsPDF + font -->
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="../../assets/fonts/DejaVuSans.js"></script>
 </head>
@@ -19,10 +18,9 @@
 
         <div class="flex flex-wrap gap-4 mt-4">
 
-            <!-- Počet obrázků -->
             <label class="ds-label">
                 Počet obrázků:
-                <select id="countSelect" class="ds-select">
+                <select id="countSelect" class="ds-select" onchange="changeMode()">
                     <option value="all">Vše</option>
                     <option value="8">8</option>
                     <option value="12">12</option>
@@ -31,40 +29,40 @@
                 </select>
             </label>
 
-            <!-- Režim -->
             <label class="ds-label">
                 Režim:
-                <select id="modeSelect" class="ds-select" onchange="generatePreview()">
-                    <option value="practice">Procvičování</option>
-                    <option value="print">Tisk – celý slovníček</option>
+                <select id="modeSelect" class="ds-select" onchange="changeMode()">
+                    <option value="practice">Procvičování (Pracovní list)</option>
+                    <option value="print">Tisk karet</option>
                 </select>
             </label>
 
-            <!-- Typ nápovědy -->
             <label class="ds-label">
-                Nápověda:
-                <select id="hintSelect" class="ds-select" onchange="generatePreview()">
-                    <option value="none">Žádná</option>
+                Nápověda / Text:
+                <select id="hintSelect" class="ds-select" onchange="changeMode()">
+                    <option value="full">Člen + Německy (Kompletní)</option>
+                    <option value="none">Žádná (Pouze obrázek)</option>
                     <option value="article">Člen</option>
                     <option value="first">Počáteční písmeno</option>
-                    <option value="anagram">Anagram</option>
                     <option value="article_first">Člen + písmeno</option>
+                    <option value="anagram">Anagram</option>
                 </select>
             </label>
 
         </div>
 
         <div class="flex gap-4 mt-4">
-            <button class="ds-btn ds-btn-primary" onclick="generatePreview()">Náhled</button>
-            <button class="ds-btn ds-btn-success" onclick="exportToPDF()">PDF</button>
+            <button class="ds-btn ds-btn-primary" onclick="changeMode()">Náhled</button>
+            <button id="exportBtn" class="ds-btn ds-btn-success" onclick="exportToPDF()">📝 Stáhnout pracovní list (PDF)</button>
             <button class="ds-btn ds-btn-secondary" onclick="goBack()">Zpět na dashboard</button>
         </div>
     </div>
 
-    <div id="previewArea" class="ds-preview">
+    <div id="previewArea" class="ds-preview mt-6">
         <div id="exerciseGrid" class="grid grid-cols-2 gap-4"></div>
     </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="bildwoerterbuch.js"></script>
+
 </body>
 </html>

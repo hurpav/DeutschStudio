@@ -14,11 +14,10 @@
       "plural": "die Bleistifte",
       "cz": "tužka",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/bleistift.png" },
+      "image": { "available": true, "file": "bleistift.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Ich brauche einen Bleistift.", "cz": "Potřebuji tužku." }
     },
-
     {
       "id": 2,
       "artikel": "der",
@@ -26,11 +25,10 @@
       "plural": "die Buntstifte",
       "cz": "pastelka",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/buntstift.png" },
+      "image": { "available": true, "file": "buntstift.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Der Buntstift ist rot.", "cz": "Pastelka je červená." }
     },
-
     {
       "id": 3,
       "artikel": "das",
@@ -38,11 +36,10 @@
       "plural": "die Bücher",
       "cz": "kniha",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/buch.png" },
+      "image": { "available": true, "file": "buch.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Das Buch liegt auf dem Tisch.", "cz": "Kniha leží na stole." }
     },
-
     {
       "id": 4,
       "artikel": "der",
@@ -50,11 +47,10 @@
       "plural": "die Filzstifte",
       "cz": "fix",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/filzstift.png" },
+      "image": { "available": true, "file": "filzstift.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Der Filzstift ist schwarz.", "cz": "Fix je černý." }
     },
-
     {
       "id": 5,
       "artikel": "der",
@@ -62,11 +58,10 @@
       "plural": "die Füller",
       "cz": "plnicí pero",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/fueller.png" },
+      "image": { "available": true, "file": "fueller.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Mein Füller ist blau.", "cz": "Moje pero je modré." }
     },
-
     {
       "id": 6,
       "artikel": "das",
@@ -74,11 +69,10 @@
       "plural": "die Hefte",
       "cz": "sešit",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/heft.png" },
+      "image": { "available": true, "file": "heft.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Das Heft ist neu.", "cz": "Sešit je nový." }
     },
-
     {
       "id": 7,
       "artikel": "der",
@@ -86,11 +80,10 @@
       "plural": "die Kleber",
       "cz": "lepidlo",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/kleber.png" },
+      "image": { "available": true, "file": "kleber.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Ich brauche Kleber.", "cz": "Potřebuji lepidlo." }
     },
-
     {
       "id": 8,
       "artikel": "der",
@@ -98,11 +91,10 @@
       "plural": "die Kugelschreiber",
       "cz": "propiska",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/kuli.png" },
+      "image": { "available": true, "file": "kuli.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Ich schreibe mit einem Kugelschreiber.", "cz": "Píšu propiskou." }
     },
-
     {
       "id": 9,
       "artikel": "das",
@@ -110,11 +102,10 @@
       "plural": "die Lehrbücher",
       "cz": "učebnice",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/lehrbuch.png" },
+      "image": { "available": true, "file": "lehrbuch.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Das Lehrbuch ist wichtig.", "cz": "Učebnice je důležitá." }
     },
-
     {
       "id": 10,
       "artikel": "das",
@@ -122,11 +113,10 @@
       "plural": "die Lineale",
       "cz": "pravítko",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/lineal.png" },
+      "image": { "available": true, "file": "lineal.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Das Lineal ist lang.", "cz": "Pravítko je dlouhé." }
     },
-
     {
       "id": 11,
       "artikel": "das",
@@ -134,11 +124,10 @@
       "plural": "die Mäppchen",
       "cz": "penál",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/maeppchen.png" },
+      "image": { "available": true, "file": "maeppchen.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Mein Mäppchen ist voll.", "cz": "Můj penál je plný." }
     },
-
     {
       "id": 12,
       "artikel": "der",
@@ -146,11 +135,10 @@
       "plural": "die Malkästen",
       "cz": "vodovky",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/malkasten.png" },
+      "image": { "available": true, "file": "malkasten.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Der Malkasten hat viele Farben.", "cz": "Vodovky mají mnoho barev." }
     },
-
     {
       "id": 13,
       "artikel": "der",
@@ -158,11 +146,10 @@
       "plural": "die Notizblöcke",
       "cz": "blok",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/notizblock.png" },
+      "image": { "available": true, "file": "notizblock.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Ich schreibe in den Notizblock.", "cz": "Píšu do bloku." }
     },
-
     {
       "id": 14,
       "artikel": "der",
@@ -170,11 +157,10 @@
       "plural": "die Ordner",
       "cz": "pořadač",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/ordner.png" },
+      "image": { "available": true, "file": "ordner.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Der Ordner ist dick.", "cz": "Pořadač je tlustý." }
     },
-
     {
       "id": 15,
       "artikel": "das",
@@ -182,11 +168,10 @@
       "plural": "die Papiere",
       "cz": "papír",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/papier.png" },
+      "image": { "available": true, "file": "papier.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Ich brauche Papier.", "cz": "Potřebuji papír." }
     },
-
     {
       "id": 16,
       "artikel": "der",
@@ -194,11 +179,10 @@
       "plural": "die Pinsel",
       "cz": "štětec",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/pinsel.png" },
+      "image": { "available": true, "file": "pinsel.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Der Pinsel ist weich.", "cz": "Štětec je měkký." }
     },
-
     {
       "id": 17,
       "artikel": "der",
@@ -206,11 +190,10 @@
       "plural": "die Radiergummis",
       "cz": "guma",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/radiergummi.png" },
+      "image": { "available": true, "file": "radiergummi.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Der Radiergummi ist klein.", "cz": "Guma je malá." }
     },
-
     {
       "id": 18,
       "artikel": "der",
@@ -218,11 +201,10 @@
       "plural": "die Rucksäcke",
       "cz": "batoh",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/rucksack.png" },
+      "image": { "available": true, "file": "rucksack.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Das ist mein Rucksack.", "cz": "To je můj batoh." }
     },
-
     {
       "id": 19,
       "artikel": "die",
@@ -230,11 +212,10 @@
       "plural": "die Scheren",
       "cz": "nůžky",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/schere.png" },
+      "image": { "available": true, "file": "schere.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Die Schere ist scharf.", "cz": "Nůžky jsou ostré." }
     },
-
     {
       "id": 20,
       "artikel": "die",
@@ -242,11 +223,10 @@
       "plural": "die Schultaschen",
       "cz": "aktovka",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/schultasche.png" },
+      "image": { "available": true, "file": "schultasche.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Die Schultasche ist schwer.", "cz": "Aktovka je těžká." }
     },
-
     {
       "id": 21,
       "artikel": "der",
@@ -254,11 +234,10 @@
       "plural": "die Spitzer",
       "cz": "ořezávátko",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/spitzer.png" },
+      "image": { "available": true, "file": "spitzer.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Der Spitzer ist neu.", "cz": "Ořezávátko je nové." }
     },
-
     {
       "id": 22,
       "artikel": "der",
@@ -266,11 +245,10 @@
       "plural": "die Stühle",
       "cz": "židle",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/stuhl.png" },
+      "image": { "available": true, "file": "stuhl.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Der Stuhl ist bequem.", "cz": "Židle je pohodlná." }
     },
-
     {
       "id": 23,
       "artikel": "das",
@@ -278,11 +256,10 @@
       "plural": "die Tablets",
       "cz": "tablet",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/tablet.png" },
+      "image": { "available": true, "file": "tablet.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Ich lerne mit dem Tablet.", "cz": "Učím se s tabletem." }
     },
-
     {
       "id": 24,
       "artikel": "die",
@@ -290,11 +267,10 @@
       "plural": "die Tafeln",
       "cz": "tabule",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/tafel.png" },
+      "image": { "available": true, "file": "tafel.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Die Tafel ist grün.", "cz": "Tabule je zelená." }
     },
-
     {
       "id": 25,
       "artikel": "der",
@@ -302,11 +278,10 @@
       "plural": "die Taschenrechner",
       "cz": "kalkulačka",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/taschenrechner.png" },
+      "image": { "available": true, "file": "taschenrechner.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Ich brauche einen Taschenrechner.", "cz": "Potřebuji kalkulačku." }
     },
-
     {
       "id": 26,
       "artikel": "der",
@@ -314,11 +289,10 @@
       "plural": "die Textmarker",
       "cz": "zvýrazňovač",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/textmarker.png" },
+      "image": { "available": true, "file": "textmarker.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Der Textmarker ist gelb.", "cz": "Zvýrazňovač je žlutý." }
     },
-
     {
       "id": 27,
       "artikel": "der",
@@ -326,11 +300,10 @@
       "plural": "die Tische",
       "cz": "stůl",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/tisch.png" },
+      "image": { "available": true, "file": "tisch.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Der Tisch ist groß.", "cz": "Stůl je velký." }
     },
-
     {
       "id": 28,
       "artikel": "der",
@@ -338,7 +311,7 @@
       "plural": "die Zirkel",
       "cz": "kružítko",
       "slovni_druh": "substantivum",
-      "image": { "available": true, "file": "assets/images/schulsachen/zirkel.png" },
+      "image": { "available": true, "file": "zirkel.png" },
       "audio": { "available": false, "file": null },
       "sentence": { "de": "Der Zirkel ist spitz.", "cz": "Kružítko je ostré." }
     }

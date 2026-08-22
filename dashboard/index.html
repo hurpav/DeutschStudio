@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DEUTSCH STUDIO - Dashboard</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<header class="ds-panel" style="margin-top: 0;">
+    <h1 class="ds-title">🇩🇪 DEUTSCH STUDIO 26. ZŠ Plzeň</h1>
+    <p>Digitální asistent učitele němčiny</p>
+</header>
+
+<main>
+
+<section class="ds-panel">
+    <h2 class="ds-title">📚 Výběr lekce</h2>
+
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+
+        <label>
+            Učebnice<br>
+            <select id="book-select"></select>
+        </label>
+
+        <label>
+            Lekce<br>
+            <select id="lesson-select"></select>
+        </label>
+
+    </div>
+
+    <div style="margin-top: 20px;">
+        <h3 id="lesson-title"></h3>
+        <p>Slovní zásoba: <strong id="word-count">0</strong> slov</p>
+    </div>
+
+    <div id="json-status" style="display:none; padding:10px; margin-top:10px; border-radius:6px;"></div>
+</section>
+
+<section class="ds-panel">
+    <h2 class="ds-title">🎮 Aktivity</h2>
+
+    <div class="ds-grid">
+
+        <div class="ds-card-dashboard" onclick="openDomino()">
+            <div class="ds-icon">🁢</div>
+            <div class="ds-card-title">Domino</div>
+        </div>
+
+        <div class="ds-card-dashboard" onclick="openTrimino()">
+            <div class="ds-icon">🔺</div>
+            <div class="ds-card-title">Trimino</div>
+        </div>
+
+        <div class="ds-card-dashboard" onclick="openPictureDictionary()">
+            <div class="ds-icon">🖼️</div>
+            <div class="ds-card-title">Obrázkový slovníček</div>
+        </div>
+
+    </div>
+</section>
+
+<section class="ds-panel">
+    <h2 class="ds-title">📊 Přehled</h2>
+
+    <div style="display: flex; gap: 40px; margin-top: 10px;">
+        <div>
+            <strong id="total-words">0</strong><br>
+            <span>slov celkem</span>
+        </div>
+        <div>
+            <strong id="lesson-number">0</strong><br>
+            <span>lekcí</span>
+        </div>
+    </div>
+</section>
+
+</main>
+
+<!-- DŮLEŽITÉ: MUSÍ být module -->
+<script type="module" src="js/app.js"></script>
+
+</body>
+</html>
