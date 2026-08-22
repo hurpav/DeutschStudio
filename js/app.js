@@ -1,177 +1,95 @@
-console.log("DeutschStudio Dashboard inicializován.");
+import { loadLessonList, loadLessonData } from "./data-loader.js";
 
-// Elementy z HTML
 const bookSelect = document.getElementById("book-select");
 const lessonSelect = document.getElementById("lesson-select");
-const classSelect = document.getElementById("class-select");
 
 const lessonTitle = document.getElementById("lesson-title");
 const wordCount = document.getElementById("word-count");
 const totalWordsStat = document.getElementById("total-words");
-const lessonNumberStat = document.getElementById("lesson-number");
 
-// Globální proměnné pro stav
-let availableLessons = [];
-let currentWords = [];
+let lessons = [];
+let currentLesson = null;
 
-// 1. Načtení seznamu lekcí
-fetch("data/lekce.json")
-    .then(response => {
-        if (!response.ok) throw new Error("Nelze načíst data/lekce.json");
-        return response.json();
-    })
-    .then(lessons => {
-        availableLessons = lessons;
+// Status box
+function showStatus(msg, ok = true) {
+    let box = document.getElementById("json-status");
+    if (!box) {
+        box = document.createElement("div");
+        box.id = "json-status";
+        box.style.padding = "10px";
+        box.style.marginTop = "10px";
+        box.style.borderRadius = "6px";
+        document.querySelector(".ds-panel").appendChild(box);
+    }
 
-        if (lessonNumberStat) {
-            lessonNumberStat.textContent = lessons.length;
-        }
+    box.textContent = msg;
+    box.style.display = "block";
+    box.style.background = ok ? "#ddffdd" : "#ffdddd";
+    box.style.color = ok ? "#060" : "#900";
+    box.style.border = ok ? "1px solid #060" : "1px solid #900";
+}
 
-        populateLessonSelect(lessons);
+// Naplnění učebnic
+function populateBooks() {
+    const books = [...new Set(lessons.map(l => l.ucebnice))];
+    bookSelect.innerHTML = "";
 
-        if (lessons.length > 0) {
-            loadLessonData(lessons[0]);
-        }
-    })
-    .catch(error => {
-        console.error("Chyba při načítání seznamu lekcí:", error);
+    books.forEach(b => {
+        const opt = document.createElement("option");
+        opt.value = b;
+        opt.textContent = b;
+        bookSelect.appendChild(opt);
     });
 
-// 2. Naplnění selectu lekcemi
-function populateLessonSelect(lessons) {
+    updateLessonSelect();
+}
+
+// Naplnění lekcí podle učebnice
+function updateLessonSelect() {
+    const selectedBook = bookSelect.value;
+
+    const filtered = lessons.filter(
+        l => l.ucebnice === selectedBook
+    );
+
     lessonSelect.innerHTML = "";
-
-    lessons.forEach((lesson, index) => {
-        const option = document.createElement("option");
-        option.value = index;
-        option.textContent = `${lesson.id || ''} ${lesson.title || 'Lekce'}`.trim();
-        lessonSelect.appendChild(option);
+    filtered.forEach(l => {
+        const opt = document.createElement("option");
+        opt.value = l.id;
+        opt.textContent = `${l.id} – ${l.title}`;
+        lessonSelect.appendChild(opt);
     });
+
+    if (filtered.length > 0) {
+        currentLesson = filtered[0];
+        loadLesson();
+    }
 }
 
-// 3. Změna lekce
-lessonSelect.addEventListener("change", (e) => {
-    const selectedIndex = e.target.value;
-    const selectedLesson = availableLessons[selectedIndex];
-    if (selectedLesson) {
-        loadLessonData(selectedLesson);
-    }
-});
+// Načtení slovíček
+async function loadLesson() {
+    const selectedId = lessonSelect.value;
+    currentLesson = lessons.find(l => l.id === selectedId);
 
-// 4. Načtení JSON souboru lekce
-function loadLessonData(lesson) {
-    fetch(lesson.file)
-        .then(response => {
-            if (!response.ok) throw new Error(`Nelze načíst ${lesson.file}`);
-            return response.json();
-        })
-        .then(data => {
-            currentWords = Array.isArray(data.words) ? data.words : [];
+    const data = await loadLessonData(currentLesson);
 
-            lessonTitle.textContent = `${lesson.id ? lesson.id + ' - ' : ''}${data.title || lesson.title}`;
-            wordCount.textContent = currentWords.length;
-
-            if (totalWordsStat) {
-                totalWordsStat.textContent = currentWords.length;
-            }
-
-            console.log(`Lekce "${data.title || lesson.title}" načtena. Počet slov: ${currentWords.length}`);
-
-            renderVocabularyPreview(currentWords);
-        })
-        .catch(error => {
-            console.error("Chyba při načítání dat lekce:", error);
-            lessonTitle.textContent = "Chyba při načítání lekce";
-            wordCount.textContent = "0";
-        });
-}
-
-// 5. Zobrazení slovíček
-function renderVocabularyPreview(words) {
-    let vocabSection = document.getElementById("vocabulary-preview");
-
-    if (!vocabSection) {
-        vocabSection = document.createElement("section");
-        vocabSection.id = "vocabulary-preview";
-        vocabSection.className = "panel";
-
-        const statsSection = document.querySelector(".statistics");
-        if (statsSection) {
-            statsSection.parentNode.insertBefore(vocabSection, statsSection);
-        } else {
-            document.querySelector(".dashboard").appendChild(vocabSection);
-        }
-    }
-
-    let html = `<h2>📚 Slovní zásoba lekce (${words.length})</h2>`;
-
-    if (words.length === 0) {
-        html += `<p>V této lekci zatím nejsou žádná slovíčka.</p>`;
+    if (!data.words || data.words.length === 0) {
+        showStatus(`❌ JSON se nepodařilo načíst nebo je prázdný`, false);
     } else {
-        html += `<div class="vocab-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 15px;">`;
-
-        words.forEach(word => {
-            let genderClass = "neutral";
-            const deLower = word.de.toLowerCase();
-            if (deLower.startsWith("der ")) genderClass = "masculine";
-            else if (deLower.startsWith("die ")) genderClass = "feminine";
-            else if (deLower.startsWith("das ")) genderClass = "neuter";
-
-            html += `
-                <div class="vocab-card ${genderClass}" style="padding: 12px; border: 1px solid #ccc; border-radius: 8px; background: #f9f9f9;">
-                    <div style="font-weight: bold; font-size: 1.1em;">${word.de}</div>
-                    <div style="color: #666; font-size: 0.95em;">${word.cz}</div>
-                </div>
-            `;
-        });
-
-        html += `</div>`;
+        showStatus(`✔ JSON načten: ${currentLesson.file}`, true);
     }
 
-    vocabSection.innerHTML = html;
+    lessonTitle.textContent = `${currentLesson.id} – ${currentLesson.title}`;
+    wordCount.textContent = data.words.length;
+    totalWordsStat.textContent = data.words.length;
 }
 
-/* -------------------------------------------------------
-   FUNKCE PRO MODULY – MUSÍ BÝT MIMO renderVocabularyPreview
-------------------------------------------------------- */
+// Události
+bookSelect.addEventListener("change", updateLessonSelect);
+lessonSelect.addEventListener("change", loadLesson);
 
-function getSelectedLessonFile() {
-    const selectedIndex = lessonSelect.value;
-    const lesson = availableLessons[selectedIndex];
-    return lesson.file;
-}
-
-function openPictureDictionary() {
-    const file = getSelectedLessonFile();
-    window.location.href = `modules/bildwoerterbuch/index.html?file=${file}`;
-}
-
-function openDomino() {
-    const file = getSelectedLessonFile();
-    window.location.href = `modules/domino/index.html?file=${file}`;
-}
-
-function openTrimino() {
-    const file = getSelectedLessonFile();
-    window.location.href = `modules/trimino/index.html?file=${file}`;
-}
-
-function openSchiffe() {
-    const file = getSelectedLessonFile();
-    window.location.href = `modules/schiffe/index.html?file=${file}`;
-}
-
-function openRiskuj() {
-    const file = getSelectedLessonFile();
-    window.location.href = `modules/riskuj/index.html?file=${file}`;
-}
-
-function openFlashcards() {
-    const file = getSelectedLessonFile();
-    window.location.href = `modules/flashcards/index.html?file=${file}`;
-}
-
-function openTest() {
-    const file = getSelectedLessonFile();
-    window.location.href = `modules/test/index.html?file=${file}`;
-}
+// Start
+(async () => {
+    lessons = await loadLessonList();
+    populateBooks();
+})();
