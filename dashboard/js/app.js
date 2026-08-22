@@ -1,5 +1,9 @@
 console.log("DeutschStudio Dashboard inicializován.");
 
+// Automatická detekce prostředí (GitHub Pages vs. lokální vývoj)
+const isGitHub = window.location.hostname.includes("github.io");
+const BASE_URL = isGitHub ? "/DeutschStudio" : "";
+
 // HTML elementy
 const bookSelect = document.getElementById("book-select");
 const lessonSelect = document.getElementById("lesson-select");
@@ -85,7 +89,7 @@ async function loadLesson() {
         return;
     }
 
-    const fullPath = `../data/slovicka/${currentLesson.ucebnice}/${currentLesson.folder}/data.json`;
+    const fullPath = `${BASE_URL}/data/slovicka/${currentLesson.ucebnice}/${currentLesson.folder}/data.json`;
 
     try {
         const response = await fetch(fullPath);
@@ -120,7 +124,7 @@ lessonSelect.addEventListener("change", loadLesson);
 ------------------------------------------------------- */
 (async () => {
     try {
-        const response = await fetch("../data/lekce.json");
+        const response = await fetch(`${BASE_URL}/data/lekce.json`);
         lessons = await response.json();
         populateBooks();
     } catch (e) {
@@ -139,7 +143,7 @@ function openModule(path) {
     }
 
     window.location.href =
-        `${path}?ucebnice=${currentLesson.ucebnice}&folder=${currentLesson.folder}`;
+        `${BASE_URL}${path}?ucebnice=${currentLesson.ucebnice}&folder=${currentLesson.folder}`;
 }
 
 window.openPictureDictionary = () => openModule("/modules/bildwoerterbuch/index.html");
