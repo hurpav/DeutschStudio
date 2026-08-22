@@ -1,5 +1,9 @@
 let database = [];
 
+// Automatická detekce prostředí (GitHub Pages vs. lokální vývoj)
+const isGitHub = window.location.hostname.includes("github.io");
+const BASE_URL = isGitHub ? "/DeutschStudio" : "";
+
 // --------------------------------------------------
 // Barvy podle členu
 // --------------------------------------------------
@@ -60,7 +64,7 @@ function getHintText(item, hintType) {
 }
 
 // --------------------------------------------------
-// Načtení JSONu
+// Načtení JSONu (UPRAVENO: přidán BASE_URL)
 // --------------------------------------------------
 export async function loadWords() {
     try {
@@ -69,7 +73,8 @@ export async function loadWords() {
         const folder = params.get("folder");
 
         if (ucebnice && folder) {
-            const fullPath = `/data/slovicka/${ucebnice}/${folder}/data.json`;
+            // Změněno z pevného /data/... na dynamické ${BASE_URL}/data/...
+            const fullPath = `${BASE_URL}/data/slovicka/${ucebnice}/${folder}/data.json`;
             const response = await fetch(fullPath);
             const data = await response.json();
 
@@ -77,7 +82,8 @@ export async function loadWords() {
                 word: item.de,
                 article: item.artikel,
                 translation: item.cz,
-                image: `/data/slovicka/${ucebnice}/${folder}/images/${item.image ? item.image.file : ''}`
+                // Zde také doplněn BASE_URL pro správnou cestu k obrázkům
+                image: `${BASE_URL}/data/slovicka/${ucebnice}/${folder}/images/${item.image ? item.image.file : ''}`
             }));
         }
 
@@ -227,7 +233,7 @@ export function changeMode() {
 }
 
 // --------------------------------------------------
-// PDF – konverze a optimalizace obrázku (Zmenšení rozlišení + JPEG komprese)
+// PDF – konverze a optimalizace obrázku
 // --------------------------------------------------
 function loadImageAsBase64(url) {
     return new Promise(resolve => {
@@ -235,7 +241,6 @@ function loadImageAsBase64(url) {
         const img = new Image();
         img.crossOrigin = "anonymous";
         img.onload = function () {
-            // Omezíme rozlišení obrázku pro PDF na max 400px
             const MAX_SIZE = 400;
             let width = img.naturalWidth || 400;
             let height = img.naturalHeight || 400;
@@ -257,13 +262,11 @@ function loadImageAsBase64(url) {
             canvas.height = height;
             const ctx = canvas.getContext("2d");
 
-            // Bílé pozadí pro JPEG
             ctx.fillStyle = "#FFFFFF";
             ctx.fillRect(0, 0, width, height);
 
             ctx.drawImage(img, 0, 0, width, height);
             try {
-                // Převod na JPEG s kompresí 75%
                 resolve(canvas.toDataURL("image/jpeg", 0.75));
             } catch (e) {
                 resolve("");
@@ -275,7 +278,7 @@ function loadImageAsBase64(url) {
 }
 
 // --------------------------------------------------
-// PDF Export (2× A5 na A4 na šířku s komprimovanými obrázky)
+// PDF Export
 // --------------------------------------------------
 export async function exportToPDF() {
     const jsPDFLib = window.jspdf ? window.jspdf.jsPDF : null;
@@ -305,7 +308,6 @@ export async function exportToPDF() {
         return;
     }
 
-    // Výpočet mřížky
     let cols = 2, rows = 2;
     if (count > 4 && count <= 6) { cols = 2; rows = 3; }
     else if (count > 6 && count <= 8) { cols = 2; rows = 4; }
@@ -322,7 +324,6 @@ export async function exportToPDF() {
     const cellHeight = availHeight / rows;
     const boxSize = Math.min(cellWidth - 4, cellHeight - 10);
 
-    // Načtení optimalizovaných JPEG obrázků
     const loadedImages = [];
     for (let item of items) {
         const imgB64 = await loadImageAsBase64(item.image);
@@ -348,7 +349,6 @@ export async function exportToPDF() {
             doc.setLineWidth(1.2);
             doc.rect(x, y, boxSize, boxSize);
 
-            // Vkládáme komprimovaný JPEG
             if (imgB64) {
                 try {
                     doc.addImage(imgB64, "JPEG", x + 1.5, y + 1.5, boxSize - 3, boxSize - 3);
@@ -364,11 +364,9 @@ export async function exportToPDF() {
         }
     }
 
-    // Levý a pravý žák
     drawA5Set(0);
     drawA5Set(148.5);
 
-    // Dělící čára
     doc.setDrawColor(180, 180, 180);
     doc.setLineWidth(0.5);
     doc.setLineDashPattern([2, 2], 0);
@@ -377,8 +375,9 @@ export async function exportToPDF() {
     doc.save(`slovnicek-2xA5-${count}ks.pdf`);
 }
 
+// UPRAVENO: Návrat zpět na dashboard s podporou BASE_URL
 export function goBack() {
-    window.location.href = "/index.html";
+    window.location.href = `${BASE_URL}/index.html`;
 }
 
 // --------------------------------------------------
