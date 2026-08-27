@@ -1,8 +1,116 @@
 [
   {
-    "id": "2.2",
-    "title": "Schulsachen",
+    "id": "1.1-LEKCE",
+    "title": "1.1 Wer bist du? (Kompletní lekce)",
+    "ucebnice": "maximal1",
+    "folder": "1.1_wer_bist_du"
+  },
+  {
+    "id": "1.2-LEKCE",
+    "title": "1.2 Ich mag das! (Kompletní lekce)",
+    "ucebnice": "maximal1",
+    "folder": "1.2_ich_mag_das"
+  },
+  {
+    "id": "1.3-LEKCE",
+    "title": "1.3 Wir sind der „Globus“ (Kompletní lekce)",
+    "ucebnice": "maximal1",
+    "folder": "1.3_wir_sind_der_globus"
+  },
+  {
+    "id": "2.1-LEKCE",
+    "title": "2.1 Was hast du am Montag? (Kompletní lekce)",
+    "ucebnice": "maximal1",
+    "folder": "2.1_was_hast_du_am_montag"
+  },
+  {
+    "id": "2.2-LEKCE",
+    "title": "2.2 Was brauchst du heute? (Kompletní lekce)",
+    "ucebnice": "maximal1",
+    "folder": "2.2_was_brauchst_du_heute"
+  },
+  {
+    "id": "2.2-TÉMA",
+    "title": "2.2 Schulsachen (Školní pomůcky - Výběr)",
     "ucebnice": "maximal1",
     "folder": "2.2_schulsachen"
+  },
+  {
+    "id": "2.3-LEKCE",
+    "title": "2.3 Schon wieder Eintopf! (Kompletní lekce)",
+    "ucebnice": "maximal1",
+    "folder": "2.3_schon_wieder_eintopf"
+  },
+  {
+    "id": "3.1-LEKCE",
+    "title": "3.1 Das ist meine Familie (Kompletní lekce)",
+    "ucebnice": "maximal2",
+    "folder": "3.1_das_ist_meine_familie"
+  },
+  {
+    "id": "3.1-TÉMA-1",
+    "title": "3.1 Familie (Rodina - Výběr)",
+    "ucebnice": "maximal2",
+    "folder": "3.1_familie"
+  },
+  {
+    "id": "3.1-TÉMA-2",
+    "title": "3.1 Berufe (Povolání - Výběr)",
+    "ucebnice": "maximal2",
+    "folder": "3.1_berufe"
+  },
+  {
+    "id": "3.1-TÉMA-3",
+    "title": "3.1 Tiere (Zvířata - Výběr)",
+    "ucebnice": "maximal2",
+    "folder": "3.1_tiere"
+  },
+  {
+    "id": "3.2-LEKCE",
+    "title": "3.2 Wir haben sturmfrei (Kompletní lekce)",
+    "ucebnice": "maximal2",
+    "folder": "3.2_wir_haben_sturmfrei"
+  },
+  {
+    "id": "3.2-TÉMA",
+    "title": "3.2 Möbel (Nábytek - Výběr)",
+    "ucebnice": "maximal2",
+    "folder": "3.2_moebel"
+  },
+  {
+    "id": "3.3-LEKCE",
+    "title": "3.3 So ist mein Tag (Kompletní lekce)",
+    "ucebnice": "maximal2",
+    "folder": "3.3_so_ist_mein_tag"
+  },
+  {
+    "id": "3.3-TÉMA",
+    "title": "3.3 Mein Tag Verben (Slovesa - Výběr)",
+    "ucebnice": "maximal2",
+    "folder": "3.3_mein_tag_verben"
+  },
+  {
+    "id": "4.1-LEKCE",
+    "title": "4.1 Wir fahren nach Berlin! (Kompletní lekce)",
+    "ucebnice": "maximal2",
+    "folder": "4.1_wir_fahren_nach_berlin"
+  },
+  {
+    "id": "4.2-LEKCE",
+    "title": "4.2 Ich habe Geburtstag (Kompletní lekce)",
+    "ucebnice": "maximal2",
+    "folder": "4.2_ich_habe_geburtstag"
+  },
+  {
+    "id": "4.3-LEKCE",
+    "title": "4.3 Endlich Ferien! (Kompletní lekce)",
+    "ucebnice": "maximal2",
+    "folder": "4.3_endlich_ferien"
+  },
+  {
+    "id": "4.3-TÉMA",
+    "title": "3.2 Die Sommerferien - (Výběr)",
+    "ucebnice": "maximal2",
+    "folder": "4.3_Die Sommerferien"
   }
 ]

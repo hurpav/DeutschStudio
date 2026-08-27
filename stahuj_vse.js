@@ -8,10 +8,37 @@ const slovickaDir = path.join(__dirname, 'data/slovicka');
 // ---------------------------------------------------------------------------
 // 1. ZDE DOPLŇTE SVOU FUNKCI PRO STAHOVÁNÍ OBRÁZKŮ (např. pomocí fetch / axios)
 // ---------------------------------------------------------------------------
+const fs = require('fs');
+const path = require('path');
+
+// Reálná funkce pro stahování obrázku
 async function downloadImage(keyword, targetFilePath, fileName) {
-    // Příklad: sem přijde váš kód, který stáhne obrázek z nějaké služby (Google Images, Pixabay apod.)
-    // a uloží ho jako soubor na disk do targetFilePath.
-    console.log(`📥 Stahuji obrázek pro "${keyword}" -> ${fileName}`);
+    try {
+        // Zde záleží na tom, odkud obrázky stahujete (např. Pixabay, Unsplash, Google API nebo vlastní URL).
+        // Pokud máte v JSONu u pole 'word.image' celou URL adresu, použijte ji. 
+        // Pokud máte jen klíčové slovo, musíte sestavit URL do vyhledávače/zdroje.
+        // Tady je příklad, pokud 'keyword' nebo URL máte:
+        
+        // Příklad, pokud by word.image obsahovalo přímou URL (upravte podle toho, co máte v JSONu):
+        // const imageUrl = keyword; // nebo odkud URL berete
+
+        // Pokud stahujete pomocí nativního fetch v Node.js:
+        /*
+        const response = await fetch(imageUrl);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        
+        fs.writeFileSync(targetFilePath, buffer);
+        console.log(`✅ Staženo: ${fileName}`);
+        */
+
+        console.log(`⚠️ Funkce downloadImage ještě nemá zadanou reálnou URL pro: ${keyword}`);
+
+    } catch (error) {
+        console.error(`❌ Chyba při stahování ${fileName}:`, error.message);
+    }
 }
 
 // ---------------------------------------------------------------------------

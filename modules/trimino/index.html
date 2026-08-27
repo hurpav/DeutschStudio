@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trimino – DeutschStudio</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap');
+
+        :root {
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --der-color: #1e40af;
+            --die-color: #dc2626;
+            --das-color: #059669;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 24px;
+        }
+
+        .ds-panel {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 900px;
+            margin: 0 auto;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .ds-title {
+            margin: 0 0 16px 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .flex-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .flex-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .ds-label {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #475569;
+            width: 100%;
+        }
+
+        .ds-select, .ds-textarea {
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background-color: #ffffff;
+            font-size: 0.95rem;
+            color: #0f172a;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .ds-textarea {
+            width: 100%;
+            height: 130px;
+            resize: vertical;
+            margin-top: 6px;
+        }
+
+        .ds-mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            background: #f1f5f9;
+            padding: 6px;
+            border-radius: 8px;
+            width: fit-content;
+        }
+
+        .ds-mode-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            background: transparent;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+
+        .ds-mode-btn.active {
+            background: #ffffff;
+            color: var(--primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .ds-checkbox-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f1f5f9;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        .ds-checkbox-card input {
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        .ds-btn {
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #ffffff;
+        }
+
+        .ds-btn-primary { background-color: var(--primary); }
+        .ds-btn-primary:hover { background-color: var(--primary-hover); }
+
+        .ds-btn-success { background-color: #059669; }
+        .ds-btn-success:hover { background-color: #047857; }
+
+        .ds-btn-secondary { background-color: #64748b; }
+        .ds-btn-secondary:hover { background-color: #475569; }
+
+        .ds-preview {
+            max-width: 900px;
+            margin: 24px auto 0 auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        .preview-page-a4 {
+            width: 100%;
+            max-width: 850px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-title {
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #cbd5e1;
+        }
+
+        .trimino-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .trimino-table th, .trimino-table td {
+            border: 1px solid #cbd5e1;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .trimino-table th {
+            background-color: #f1f5f9;
+            color: #334155;
+        }
+
+        .trimino-table canvas {
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            display: block;
+            max-width: 120px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ds-panel">
+        <h2 class="ds-title">🧩 Trimino Generátor (Paul-Matthies Bridge)</h2>
+
+        <!-- Přepínač zdroje dat -->
+        <div class="ds-mode-selector">
+            <button id="modeJsonBtn" class="ds-mode-btn active" onclick="switchInputMode('json')">📁 Načíst z JSONu</button>
+            <button id="modeManualBtn" class="ds-mode-btn" onclick="switchInputMode('manual')">✏️ Ruční vložení textu</button>
+        </div>
+
+        <div class="flex-wrap">
+            <label class="ds-label" style="width: auto; flex: 1;">
+                Tvar / Počet párů:
+                <select id="triminoType" class="ds-select" onchange="changeMode()">
+                    <option value="1">Trojúhelník (12 párů)</option>
+                    <option value="2">Hvězda (9 párů)</option>
+                    <option value="3">Velký trojúhelník (30 párů)</option>
+                </select>
+            </label>
+        </div>
+
+        <!-- Ruční vkládání (ve výchozím stavu skryté) -->
+        <div id="manualInputBox" style="display: none; margin-top: 16px;">
+            <label class="ds-label">
+                Vlož slovíčka (Formát: NĚMECKY - ČESKY nebo der Rucksack - batoh, každá dvojice na nový řádek):
+                <textarea id="manualTextarea" class="ds-textarea" placeholder="der Rucksack - batoh&#10;das Heft - sešit&#10;die Schere - nůžky" oninput="parseManualInput()"></textarea>
+            </label>
+        </div>
+
+        <label class="ds-checkbox-card">
+            <input type="checkbox" id="imageModeCheckbox" onchange="changeMode()" checked>
+            <span>🖼️ Obrázkový režim (druhá strana bude mít názvy 1.png, 2.png...)</span>
+        </label>
+
+        <div class="flex-actions">
+            <button class="ds-btn ds-btn-primary" onclick="sendToPaulMatthies()">🚀 Otevřít v Paul-Matthies Generátoru</button>
+            <button id="downloadZipBtn" class="ds-btn ds-btn-success" onclick="downloadZipArchive()">📦 Stáhnout obrázkový ZIP (300×130)</button>
+            <button class="ds-btn ds-btn-secondary" onclick="goBack()">Zpět na dashboard</button>
+        </div>
+    </div>
+
+    <div id="previewArea" class="ds-preview">
+        <div class="preview-page-a4">
+            <div class="preview-title">👁️ Živý náhled načtených dat a obrázků</div>
+            <table class="trimino-table">
+                <thead>
+                    <tr>
+                        <th style="width: 8%;">Pár</th>
+                        <th style="width: 32%;">Strana 1 (DE - Německy)</th>
+                        <th style="width: 30%;">Strana 2 (CZ / Název souboru)</th>
+                        <th style="width: 30%;">Obrázek (300×130 px)</th>
+                    </tr>
+                </thead>
+                <tbody id="previewTableBody">
+                    <tr><td colspan="4" style="text-align: center;">Načítám data slovíček...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module" src="trimino.js"></script>
+
+</body>
+</html>

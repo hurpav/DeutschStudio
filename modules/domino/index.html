@@ -3,38 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Domino – Obrázek → DE</title>
-
-    <link rel="stylesheet" href="../../css/style.css">
-
-    <!-- jsPDF -->
+    <title>Domino – DeutschStudio</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="../../assets/fonts/DejaVuSans.js"></script>
 
     <style>
-        .domino-card {
+        @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap');
+
+        :root {
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --der-color: #1e40af;
+            --die-color: #dc2626;
+            --das-color: #059669;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 24px;
+        }
+
+        /* Panel rozhraní Bildwörterbuchu */
+        .ds-panel {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 900px;
+            margin: 0 auto;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .ds-title {
+            margin: 0 0 16px 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px;
-            border-radius: 8px;
-            background: #fff;
-            border: 1px solid #ddd;
+            gap: 8px;
         }
-        .domino-img {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-            background: #f7f7f7;
+
+        .flex-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .flex-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .ds-label {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .ds-select {
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
             border-radius: 6px;
-            border: 1px solid #ccc;
+            background-color: #ffffff;
+            font-size: 0.95rem;
+            color: #0f172a;
+            outline: none;
+            transition: all 0.2s ease;
         }
-        .masculine { border-left: 6px solid #3b82f6; }
-        .feminine { border-left: 6px solid #ec4899; }
-        .neuter { border-left: 6px solid #10b981; }
+
+        .ds-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        /* Tlačítka */
+        .ds-btn {
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #ffffff;
+        }
+
+        .ds-btn-primary { background-color: var(--primary); }
+        .ds-btn-primary:hover { background-color: var(--primary-hover); }
+
+        .ds-btn-success { background-color: #059669; }
+        .ds-btn-success:hover { background-color: #047857; }
+
+        .ds-btn-secondary { background-color: #64748b; }
+        .ds-btn-secondary:hover { background-color: #475569; }
+
+        /* Náhledová A4 stránka */
+        .ds-preview {
+            max-width: 900px;
+            margin: 24px auto 0 auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        .preview-page-a4 {
+            width: 100%;
+            max-width: 750px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-title {
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #cbd5e1;
+        }
+
+        /* Dvousloupcová mřížka pro A4 */
+        .domino-grid-2col {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        /* Kartička Domina v náhledu */
+        .domino-card {
+            background: #ffffff;
+            border: 1px solid #475569;
+            border-radius: 4px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .domino-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            border-left: 1px dashed #94a3b8;
+        }
+
+        .domino-text-side {
+            width: 50%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-align: center;
+            line-height: 1.2;
+            overflow: hidden;
+            word-break: break-word;
+        }
+
+        .domino-img-side {
+            width: 50%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+        }
+
+        /* Striktní zamezení roztažení obrázků v náhledu */
+        .domino-img-side img {
+            max-height: 38px !important;
+            max-width: 90% !important;
+            width: auto !important;
+            height: auto !important;
+            object-fit: contain !important;
+        }
     </style>
 </head>
-
-<body class="bg-slate-100 p-6">
+<body>
 
     <div class="ds-panel">
+        <h2 class="ds-title">🀄 Domino Generátor</h2>
+
+        <div class="flex-wrap">
+            <label class="ds-label">
+                Počet kartiček:
+                <select id="countSelect" class="ds-select" onchange="changeMode()">
+                    <option value="8">8 karet</option>
+                    <option value="16" selected>16 karet (1 strana A4)</option>
+                    <option value="24">24 karet</option>
+                    <option value="32">32 karet (2 strany A4)</option>
+                </select>
+            </label>
+
+            <label class="ds-label">
+                Nápověda / Text:
+                <select id="hintSelect" class="ds-select" onchange="changeMode()">
+                    <option value="full">Člen + Německy (Kompletní)</option>
+                    <option value="article">Pouze člen</option>
+                    <option value="first">Počáteční písmeno</option>
+                    <option value="article_first">Člen + písmeno</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="flex-actions">
+            <button class="ds-btn ds-btn-primary" onclick="changeMode()">Obnovit náhled</button>
+            <button id="exportBtn" class="ds-btn ds-btn-success" onclick="exportToPDF()">🖨️ Stáhnout Domino (PDF)</button>
+            <button class="ds-btn ds-btn-secondary" onclick="goBack()">Zpět na dashboard</button>
+        </div>
+    </div>
+
+    <div id="previewArea" class="ds-preview">
+        <div id="dominoGrid"></div>
+    </div>
+
+    <script type="module" src="domino.js"></script>
+
+</body>
+</html>
