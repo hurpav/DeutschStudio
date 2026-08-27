@@ -146,6 +146,9 @@ function openModule(path) {
         `${BASE_URL}${path}?ucebnice=${currentLesson.ucebnice}&folder=${currentLesson.folder}`;
 }
 
+/* -------------------------------------------------------
+   OTEVÍRÁNÍ MODULŮ
+------------------------------------------------------- */
 window.openPictureDictionary = () => openModule("/modules/bildwoerterbuch/index.html");
 window.openDomino = () => openModule("/modules/domino/index.html");
 window.openTrimino = () => openModule("/modules/trimino/index.html");
@@ -153,3 +156,6 @@ window.openSchiffe = () => openModule("/modules/schiffe/index.html");
 window.openRiskuj = () => openModule("/modules/riskuj/index.html");
 window.openFlashcards = () => openModule("/modules/flashcards/index.html");
 window.openTest = () => openModule("/modules/test/index.html");
+// Přidané propojení pro Kolo štěstí (podporuje oba názvy funkcí):
+window.openGlücksrad = () => openModule("/modules/wheel/index.html");
+window.openWheel = () => openModule("/modules/wheel/index.html");

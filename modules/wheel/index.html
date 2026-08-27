@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kolo štěstí – DeutschStudio</title>
+
+    <!-- Tailwind CSS (utility) & Font Awesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700;900&display=swap');
+
+        :root {
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 24px;
+        }
+
+        .ds-panel {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .ds-title {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ds-tab-btn {
+            padding: 10px 20px;
+            font-weight: 700;
+            border-radius: 8px 8px 0 0;
+            border: 1px solid var(--border);
+            border-bottom: none;
+            background-color: #f1f5f9;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ds-tab-btn.active {
+            background-color: #ffffff;
+            color: var(--primary);
+            border-top: 3px solid var(--primary);
+        }
+
+        .ds-select, .ds-input {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background-color: #ffffff;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .ds-btn {
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #ffffff;
+        }
+
+        .ds-btn-sm {
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+
+        .ds-btn-primary { background-color: var(--primary); }
+        .ds-btn-primary:hover { background-color: var(--primary-hover); }
+
+        .ds-btn-success { background-color: #059669; }
+        .ds-btn-success:hover { background-color: #047857; }
+
+        .ds-btn-danger { background-color: #dc2626; }
+        .ds-btn-danger:hover { background-color: #b91c1c; }
+
+        .ds-btn-secondary { background-color: #64748b; }
+        .ds-btn-secondary:hover { background-color: #475569; }
+
+        /* Styl položek seznamu */
+        .item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 6px;
+        }
+
+        .item-row.disabled {
+            background-color: #f8fafc;
+            opacity: 0.6;
+        }
+
+        .item-row.disabled strong {
+            text-decoration: line-through;
+        }
+
+        .badge-date {
+            font-size: 0.75rem;
+            background: #e2e8f0;
+            color: #475569;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+
+        .btn-delete {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .btn-delete:hover {
+            opacity: 1;
+        }
+
+        /* Modální okno */
+        .winner-modal {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+
+        .winner-box {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 480px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes modalPop {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ds-panel">
+        
+        <!-- Záhlaví panela -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="ds-title"><i class="fa-solid fa-circle-notch text-blue-600"></i> Kolo štěstí</h2>
+            <button onclick="window.location.href='../../index.html'" class="ds-btn ds-btn-secondary">
+                <i class="fa-solid fa-house"></i> Dashboard
+            </button>
+        </div>
+
+        <!-- Přepínací záložky -->
+        <div class="flex gap-2 border-b border-slate-200">
+            <button id="tabStudentsBtn" class="ds-tab-btn active" onclick="switchTab('students')">
+                <i class="fa-solid fa-user-graduate"></i> Žáci
+            </button>
+            <button id="tabVocabBtn" class="ds-tab-btn" onclick="switchTab('vocab')">
+                <i class="fa-solid fa-book"></i> Slovíčka
+            </button>
+        </div>
+
+        <!-- Ovládací panely záložek -->
+        <div class="bg-slate-50 p-4 border border-t-0 border-slate-200 rounded-b-lg mb-6">
+            
+            <!-- Panel pro žáky -->
+            <div id="controlsStudents" class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-2">
+                    <label class="font-semibold text-slate-700">Třída:</label>
+                    <select id="classSelect" class="ds-select" onchange="loadClassData()">
+                        <option value="7a">7.A</option>
+                        <option value="7b">7.B</option>
+                        <option value="8a">8.A</option>
+                        <option value="8b">8.B</option>
+                        <option value="9a">9.A</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Panel pro slovíčka -->
+            <div id="controlsVocab" class="flex flex-wrap items-center justify-between gap-4 hidden">
+                <div class="flex flex-wrap items-center gap-4">
+                    <div>
+                        <label class="font-semibold text-slate-700">Jazyk:</label>
+                        <select id="langSelect" class="ds-select" onchange="prepareVocabItems()">
+                            <option value="de">Němčina (DE)</option>
+                            <option value="cz">Čeština (CZ)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700">Počet slovíček:</label>
+                        <select id="countSelect" class="ds-select" onchange="prepareVocabItems()">
+                            <option value="8">8 slovíček</option>
+                            <option value="12">12 slovíček</option>
+                            <option value="15" selected>15 slovíček</option>
+                            <option value="20">20 slovíček</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Skóre tracker pro slovíčka -->
+                <div id="vocabScoreTracker" class="flex items-center gap-4 bg-white px-4 py-2 rounded-lg border border-slate-200 hidden">
+                    <div>Zbývá: <strong id="wordsLeftCount" class="text-blue-600">0 / 0</strong></div>
+                    <div class="text-slate-300">|</div>
+                    <div>Skóre (👍:👎): <strong id="scoreText" class="text-emerald-600">0 : 0</strong></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Hlavní pracovní plocha: Kolo (vlevo) + Seznam (vpravo) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Vlevo: Plátno kola štěstí a tlačítko roztočení -->
+            <div class="lg:col-span-7 flex flex-col items-center justify-center">
+                <div class="relative w-[400px] h-[400px]">
+                    <!-- Ukazatel (šipka nahoře) -->
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 z-10 w-0 h-0 border-l-[14px] border-l-transparent border-r-[14px] border-r-transparent border-t-[24px] border-t-red-600 drop-shadow"></div>
+                    <!-- Canvas kola -->
+                    <canvas id="canvas" width="400" height="400" class="rounded-full shadow-lg border-4 border-white"></canvas>
+                </div>
+
+                <button id="spinBtn" class="ds-btn ds-btn-primary text-lg px-8 py-3 mt-6 shadow-md" onclick="spinWheel()">
+                    <i class="fa-solid fa-play"></i> ROZTOČIT KOLO!
+                </button>
+            </div>
+
+            <!-- Vpravo: Seznam a přidávání položek -->
+            <div class="lg:col-span-5 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <h3 id="listTitle" class="font-bold text-slate-800 text-lg mb-3">Seznam:</h3>
+                
+                <!-- Přidání vlastní položky -->
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="newItemInput" class="ds-input flex-1" placeholder="Přidat položku..." onkeypress="if(event.key==='Enter') addItem()">
+                    <button class="ds-btn ds-btn-success" onclick="addItem()"><i class="fa-solid fa-plus"></i></button>
+                </div>
+
+                <!-- Kontejner pro dynamické vykreslení seznamu -->
+                <div id="itemList" class="max-h-[380px] overflow-y-auto pr-1"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Modální okno VÝHRA / HODNOCENÍ / KONEC HRY -->
+    <div id="winnerModal" class="winner-modal hidden">
+        <div class="winner-box">
+            <div id="modalIcon" class="text-5xl mb-2">🎉</div>
+            <h3 id="modalSubtitle" class="text-lg font-bold text-slate-600 m-0">Vybráno:</h3>
+            <div id="winnerText" class="text-3xl font-black text-slate-900 my-4 leading-tight"></div>
+            
+            <!-- 1. Tlačítka pro TŘÍDY (Žáci) -->
+            <div id="studentModalControls" class="flex gap-3 justify-center mt-6">
+                <button class="ds-btn ds-btn-success" onclick="confirmWinner()"><i class="fa-solid fa-check"></i> Zapsat zkoušení</button>
+                <button class="ds-btn ds-btn-secondary" onclick="closeModal()">Zavřít</button>
+            </div>
+
+            <!-- 2. Tlačítka pro SLOVNÍ ZÁSOBU (Hodnocení odpovědi) -->
+            <div id="vocabModalControls" class="flex gap-3 justify-center mt-6 hidden">
+                <button class="ds-btn ds-btn-success" onclick="rateAnswer(true)">👍 RICHTIG</button>
+                <button class="ds-btn ds-btn-danger" onclick="rateAnswer(false)">👎 FALSCH</button>
+            </div>
+
+            <!-- 3. Tlačítko pro ZÁVĚREČNÉ VYHODNOCENÍ (Konec hry) -->
+            <div id="finalModalControls" class="flex gap-3 justify-center mt-6 hidden">
+                <button class="ds-btn ds-btn-primary" onclick="closeModal()"><i class="fa-solid fa-xmark"></i> Zavřít a dokončit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript soubor logiky -->
+    <script type="module" src="wheel.js"></script>
+
+</body>
+</html>
