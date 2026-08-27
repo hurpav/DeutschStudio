@@ -89,10 +89,12 @@ window.switchTab = function(tab) {
     document.getElementById('vocabScoreTracker')?.classList.toggle('hidden', tab !== 'vocab');
 
     if (tab === 'students') {
-        document.getElementById('listTitle').innerText = 'Seznam žáků:';
+        const titleElem = document.getElementById('listTitle');
+        if (titleElem) titleElem.innerText = 'Klassenliste / Liste der Schüler:';
         loadClassData();
     } else {
-        document.getElementById('listTitle').innerText = 'Seznam slovíček v kole:';
+        const titleElem = document.getElementById('listTitle');
+        if (titleElem) titleElem.innerText = 'Wortschatzliste im Rad:';
         prepareVocabItems();
     }
 };
@@ -154,7 +156,6 @@ window.prepareVocabItems = async function() {
     const lang = document.getElementById('langSelect')?.value || 'de';
     const count = parseInt(document.getElementById('countSelect')?.value || 15, 10);
 
-    // Vynulování skóre a nastavení celkového počtu
     correctAnswersCount = 0;
     wrongAnswersCount = 0;
     totalVocabCount = count;
@@ -163,11 +164,19 @@ window.prepareVocabItems = async function() {
 
     try {
         const fullPath = `../../../data/slovicka/${ucebnice}/${folder}/data.json`;
-        const res = await fetch(fullPath);
-        if (!res.ok) throw new Error("Nelze načíst slovíčka");
-        
+        let res = await fetch(fullPath);
+        if (!res.ok) res = await fetch(`/DeutschStudio/data/slovicka/${ucebnice}/${folder}/data.json`);
+        if (!res.ok) throw new Error("Keine Wörter gefunden");
+
         const data = await res.json();
         const words = data.words || [];
+        
+        if (words.length === 0) {
+            alert("Keine Wörter für diese Lektion verfügbar!");
+            activeItems = [];
+            return;
+        }
+
         const shuffled = [...words].sort(() => 0.5 - Math.random()).slice(0, count);
 
         activeItems = shuffled.map((v, idx) => {
@@ -190,11 +199,19 @@ window.prepareVocabItems = async function() {
 
 function updateVocabTrackerUI() {
     const remaining = activeItems.filter(i => !i.disabled).length;
-    document.getElementById('wordsLeftCount').innerText = `${remaining} / ${totalVocabCount}`;
-    document.getElementById('scoreText').innerText = `${correctAnswersCount} : ${wrongAnswersCount}`;
+    const remainingElem = document.getElementById('wordsLeftCount');
+    const scoreElem = document.getElementById('scoreText');
+    if (remainingElem) remainingElem.innerText = `${remaining} / ${totalVocabCount}`;
+    if (scoreElem) scoreElem.innerText = `${correctAnswersCount} : ${wrongAnswersCount}`;
 }
 
-// Vyhodnocení správné/špatné odpovědi u slovíček
+window.confirmWinner = function() {
+    if (selectedItemIndex !== null && currentTab === 'students') {
+        toggleItem(selectedItemIndex);
+    }
+    closeModal();
+};
+
 window.rateAnswer = function(isCorrect) {
     if (isCorrect) {
         correctAnswersCount++;
@@ -202,7 +219,6 @@ window.rateAnswer = function(isCorrect) {
         wrongAnswersCount++;
     }
 
-    // Vyřazení vytočeného slovíčka z kola (odpočet)
     if (selectedItemIndex !== null) {
         activeItems[selectedItemIndex].disabled = true;
     }
@@ -212,25 +228,22 @@ window.rateAnswer = function(isCorrect) {
     drawWheel();
     closeModal();
 
-    // Kontrola, zda již proběhl odpočet až na 0
     const remaining = activeItems.filter(i => !i.disabled).length;
     if (remaining === 0) {
         showFinalScoreModal();
     }
 };
 
-// --- VYHODNOCENÍ KONCE HRY SLOVÍČEK ---
 function showFinalScoreModal() {
     const grade = calculateGrade(correctAnswersCount, totalVocabCount);
     
     document.getElementById('modalIcon').innerText = '🏆';
-    document.getElementById('modalSubtitle').innerText = 'Konec hry! Výsledná známka:';
+    document.getElementById('modalSubtitle').innerText = 'Spielende! Gesamtnote:';
     document.getElementById('winnerText').innerHTML = `
-        <div style="font-size: 4rem; color: #059669; font-weight: 900;">Známka ${grade}</div>
-        <div style="font-size: 1.25rem; color: #475569; margin-top: 8px;">Správně: ${correctAnswersCount} | Špatně: ${wrongAnswersCount}</div>
+        <div style="font-size: 4rem; color: #059669; font-weight: 900;">Note ${grade}</div>
+        <div style="font-size: 1.25rem; color: #475569; margin-top: 8px;">Richtig: ${correctAnswersCount} | Falsch: ${wrongAnswersCount}</div>
     `;
 
-    // Skryjeme ovládání jednotlivých kol a zobrazíme tlačítko pro zavření konce hry
     document.getElementById('studentModalControls')?.classList.add('hidden');
     document.getElementById('vocabModalControls')?.classList.add('hidden');
     document.getElementById('finalModalControls')?.classList.remove('hidden');
@@ -321,7 +334,7 @@ function renderList() {
             ? `<span class="badge-date">🗓️ ${item.lastTested}</span>` 
             : '';
 
-        const btnText = item.disabled ? '🔄 Vrátit' : (currentTab === 'students' ? '✔ Vyzkoušet' : 'Vyřadit');
+        const btnText = item.disabled ? '🔄 Wiederherstellen' : (currentTab === 'students' ? '✔ Abfragen' : 'Entfernen');
         const btnClass = item.disabled ? 'ds-btn-secondary' : 'ds-btn-danger';
 
         row.innerHTML = `
@@ -333,7 +346,7 @@ function renderList() {
                 <button class="ds-btn ds-btn-sm ${btnClass}" onclick="toggleItem(${index})">
                     ${btnText}
                 </button>
-                <button class="btn-delete" title="Trvale smazat" onclick="deleteItem(${index})">🗑️</button>
+                <button class="btn-delete" title="Löschen" onclick="deleteItem(${index})">🗑️</button>
             </div>
         `;
         container.appendChild(row);
@@ -360,7 +373,7 @@ function drawWheel() {
         ctx.fillStyle = "white";
         ctx.font = 'bold 16px sans-serif';
         ctx.textAlign = "center";
-        ctx.fillText("Žádné dostupné položky!", 200, 205);
+        ctx.fillText("Keine verfügbaren Elemente!", 200, 205);
         return;
     }
 
@@ -396,13 +409,14 @@ window.spinWheel = function() {
     if (availableItems.length === 0) return;
 
     isSpinning = true;
-    document.getElementById('spinBtn').disabled = true;
+    const spinBtn = document.getElementById('spinBtn');
+    if (spinBtn) spinBtn.disabled = true;
 
     if (currentTab === 'vocab') {
-        spinVelocity = Math.random() * 0.40 + 0.70; // Rychlá animace
+        spinVelocity = Math.random() * 0.40 + 0.70;
         friction = 0.940 + Math.random() * 0.010;
     } else {
-        spinVelocity = Math.random() * 0.20 + 0.35; // Pomalá animace
+        spinVelocity = Math.random() * 0.20 + 0.35;
         friction = 0.983 + Math.random() * 0.005;
     }
 
@@ -417,10 +431,12 @@ function animateWheel() {
     drawWheel();
 
     const availableItems = activeItems.filter(i => !i.disabled);
-    const currentSector = Math.floor((startAngle % (Math.PI * 2)) / (Math.PI * 2 / availableItems.length));
-    if (currentSector !== lastSoundSector) {
-        playTickSound();
-        lastSoundSector = currentSector;
+    if (availableItems.length > 0) {
+        const currentSector = Math.floor((startAngle % (Math.PI * 2)) / (Math.PI * 2 / availableItems.length));
+        if (currentSector !== lastSoundSector) {
+            playTickSound();
+            lastSoundSector = currentSector;
+        }
     }
 
     if (spinVelocity < 0.002) {
@@ -431,11 +447,11 @@ function animateWheel() {
     animFrameId = requestAnimationFrame(animateWheel);
 }
 
-// --- ZOBRAZENÍ VÝSLEDKU KOLEČKA ---
 function stopRotateWheel() {
     cancelAnimationFrame(animFrameId);
     isSpinning = false;
-    document.getElementById('spinBtn').disabled = false;
+    const spinBtn = document.getElementById('spinBtn');
+    if (spinBtn) spinBtn.disabled = false;
 
     const availableItems = activeItems.filter(i => !i.disabled);
     const arc = Math.PI / (availableItems.length / 2);
@@ -448,13 +464,12 @@ function stopRotateWheel() {
 
     playWinSound();
     document.getElementById('modalIcon').innerText = '🎉';
-    document.getElementById('modalSubtitle').innerText = 'Vybráno:';
+    document.getElementById('modalSubtitle').innerText = 'Ausgewählt:';
     document.getElementById('winnerText').innerText = winner.fullName || winner.text;
 
-    // Přepínání viditelnosti tlačítek v modálním okně
     document.getElementById('studentModalControls')?.classList.toggle('hidden', currentTab !== 'students');
     document.getElementById('vocabModalControls')?.classList.toggle('hidden', currentTab !== 'vocab');
-    document.getElementById('finalModalControls')?.classList.add('hidden'); // Skryjeme tlačítko konce hry během běžného kola
+    document.getElementById('finalModalControls')?.classList.add('hidden');
 
     document.getElementById('winnerModal')?.classList.remove('hidden');
 }
@@ -462,7 +477,6 @@ function stopRotateWheel() {
 window.closeModal = function() {
     document.getElementById('winnerModal')?.classList.add('hidden');
 
-    // Pokud skončila hra u slovíček, po zavření modálu připravíme novou sadu slovíček
     if (currentTab === 'vocab' && activeItems.filter(i => !i.disabled).length === 0) {
         prepareVocabItems();
     }
