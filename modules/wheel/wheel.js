@@ -154,18 +154,20 @@ window.prepareVocabItems = async function() {
     const folder = urlParams.get('folder') || '1.1_wer_bist_du';
     
     const lang = document.getElementById('langSelect')?.value || 'de';
-    const count = parseInt(document.getElementById('countSelect')?.value || 15, 10);
+    const countElem = document.getElementById('countSelect');
+    const requestedCount = countElem ? parseInt(countElem.value, 10) : 15;
 
     correctAnswersCount = 0;
     wrongAnswersCount = 0;
-    totalVocabCount = count;
-
     sectorColors = generateColorPalette("#0f766e");
 
+    const isGitHub = window.location.hostname.includes("github.io");
+    const basePath = isGitHub ? "/DeutschStudio" : "";
+    const fullPath = `${basePath}/data/slovicka/${ucebnice}/${folder}/data.json`;
+
     try {
-        const fullPath = `../../../data/slovicka/${ucebnice}/${folder}/data.json`;
         let res = await fetch(fullPath);
-        if (!res.ok) res = await fetch(`/DeutschStudio/data/slovicka/${ucebnice}/${folder}/data.json`);
+        if (!res.ok) res = await fetch(`../../../data/slovicka/${ucebnice}/${folder}/data.json`);
         if (!res.ok) throw new Error("Keine Wörter gefunden");
 
         const data = await res.json();
@@ -174,10 +176,11 @@ window.prepareVocabItems = async function() {
         if (words.length === 0) {
             alert("Keine Wörter für diese Lektion verfügbar!");
             activeItems = [];
+            totalVocabCount = 0;
             return;
         }
 
-        const shuffled = [...words].sort(() => 0.5 - Math.random()).slice(0, count);
+        const shuffled = [...words].sort(() => 0.5 - Math.random()).slice(0, requestedCount);
 
         activeItems = shuffled.map((v, idx) => {
             const deText = v.artikel ? `${v.artikel} ${v.de}` : v.de;
@@ -188,8 +191,13 @@ window.prepareVocabItems = async function() {
                 disabled: false
             };
         });
+
+        totalVocabCount = activeItems.length;
+
     } catch (e) {
+        console.error("Chyba při načítání slovíček:", e);
         activeItems = [];
+        totalVocabCount = 0;
     }
 
     updateVocabTrackerUI();
@@ -219,41 +227,50 @@ window.rateAnswer = function(isCorrect) {
         wrongAnswersCount++;
     }
 
-    if (selectedItemIndex !== null) {
+    if (selectedItemIndex !== null && activeItems[selectedItemIndex]) {
         activeItems[selectedItemIndex].disabled = true;
     }
 
     updateVocabTrackerUI();
     renderList();
     drawWheel();
-    closeModal();
 
     const remaining = activeItems.filter(i => !i.disabled).length;
     if (remaining === 0) {
-        showFinalScoreModal();
+        showFinalScoreModal(); // Zobrazí finální skóre PŘED resetováním
+    } else {
+        closeModal();
     }
 };
 
 function showFinalScoreModal() {
-    const grade = calculateGrade(correctAnswersCount, totalVocabCount);
+    const actualTotal = correctAnswersCount + wrongAnswersCount;
+    const grade = calculateGrade(correctAnswersCount, actualTotal);
     
     document.getElementById('modalIcon').innerText = '🏆';
     document.getElementById('modalSubtitle').innerText = 'Spielende! Gesamtnote:';
-    document.getElementById('winnerText').innerHTML = `
-        <div style="font-size: 4rem; color: #059669; font-weight: 900;">Note ${grade}</div>
-        <div style="font-size: 1.25rem; color: #475569; margin-top: 8px;">Richtig: ${correctAnswersCount} | Falsch: ${wrongAnswersCount}</div>
-    `;
-
+    
     document.getElementById('studentModalControls')?.classList.add('hidden');
     document.getElementById('vocabModalControls')?.classList.add('hidden');
     document.getElementById('finalModalControls')?.classList.remove('hidden');
+
+    const winnerTextElem = document.getElementById('winnerText');
+    if (winnerTextElem) {
+        winnerTextElem.innerHTML = `
+            <div style="font-size: 3rem; color: #059669; font-weight: 900; margin: 5px 0;">Note ${grade}</div>
+            <div style="font-size: 1.1rem; color: #475569; margin-top: 5px;">Richtig: ${correctAnswersCount} | Falsch: ${wrongAnswersCount}</div>
+        `;
+    }
 
     const modal = document.getElementById('winnerModal');
     modal?.classList.remove('hidden');
 }
 
 function calculateGrade(correct, total) {
+    if (!total || total <= 0) return '5 ❌';
+
     const ratio = correct / total;
+    
     if (ratio >= 0.85) return '1 🥇';
     if (ratio >= 0.67) return '2 🥈';
     if (ratio >= 0.45) return '3 🥉';
@@ -359,21 +376,21 @@ function drawWheel() {
     const ctx = canvas.getContext("2d");
     
     const availableItems = activeItems.filter(i => !i.disabled);
-    const outsideRadius = 200;
-    const textRadius = 135;
-    const insideRadius = 35;
+    const outsideRadius = 230;
+    const textRadius = 160;
+    const insideRadius = 45;
 
-    ctx.clearRect(0, 0, 400, 400);
+    ctx.clearRect(0, 0, 500, 500);
 
     if (availableItems.length === 0) {
         ctx.fillStyle = "#94a3b8";
         ctx.beginPath();
-        ctx.arc(200, 200, outsideRadius, 0, Math.PI * 2);
+        ctx.arc(250, 250, outsideRadius, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = "white";
-        ctx.font = 'bold 16px sans-serif';
+        ctx.font = 'bold 18px sans-serif';
         ctx.textAlign = "center";
-        ctx.fillText("Keine verfügbaren Elemente!", 200, 205);
+        ctx.fillText("Keine verfügbaren Elemente!", 250, 255);
         return;
     }
 
@@ -384,20 +401,20 @@ function drawWheel() {
         ctx.fillStyle = sectorColors[i % sectorColors.length];
 
         ctx.beginPath();
-        ctx.arc(200, 200, outsideRadius, angle, angle + arc, false);
-        ctx.arc(200, 200, insideRadius, angle + arc, angle, true);
+        ctx.arc(250, 250, outsideRadius, angle, angle + arc, false);
+        ctx.arc(250, 250, insideRadius, angle + arc, angle, true);
         ctx.fill();
 
         ctx.save();
         ctx.fillStyle = "white";
-        ctx.translate(200 + Math.cos(angle + arc / 2) * textRadius, 
-                      200 + Math.sin(angle + arc / 2) * textRadius);
+        ctx.translate(250 + Math.cos(angle + arc / 2) * textRadius, 
+                      250 + Math.sin(angle + arc / 2) * textRadius);
         ctx.rotate(angle + arc / 2 + Math.PI / 2);
-        ctx.font = 'bold 13px sans-serif';
+        ctx.font = 'bold 15px sans-serif';
         ctx.textAlign = "center";
         
         let displayStr = item.text;
-        if (displayStr.length > 14) displayStr = displayStr.substring(0, 12) + '..';
+        if (displayStr.length > 16) displayStr = displayStr.substring(0, 14) + '..';
         ctx.fillText(displayStr, 0, 0);
         ctx.restore();
     });
@@ -463,13 +480,18 @@ function stopRotateWheel() {
     selectedItemIndex = activeItems.findIndex(i => i.id === winner.id);
 
     playWinSound();
+    
     document.getElementById('modalIcon').innerText = '🎉';
     document.getElementById('modalSubtitle').innerText = 'Ausgewählt:';
     document.getElementById('winnerText').innerText = winner.fullName || winner.text;
 
-    document.getElementById('studentModalControls')?.classList.toggle('hidden', currentTab !== 'students');
-    document.getElementById('vocabModalControls')?.classList.toggle('hidden', currentTab !== 'vocab');
-    document.getElementById('finalModalControls')?.classList.add('hidden');
+    const studentControls = document.getElementById('studentModalControls');
+    const vocabControls = document.getElementById('vocabModalControls');
+    const finalControls = document.getElementById('finalModalControls');
+
+    if (studentControls) studentControls.classList.toggle('hidden', currentTab !== 'students');
+    if (vocabControls) vocabControls.classList.toggle('hidden', currentTab !== 'vocab');
+    if (finalControls) finalControls.classList.add('hidden');
 
     document.getElementById('winnerModal')?.classList.remove('hidden');
 }
@@ -477,6 +499,7 @@ function stopRotateWheel() {
 window.closeModal = function() {
     document.getElementById('winnerModal')?.classList.add('hidden');
 
+    // Reset proběhne až po zavření finálního modalu
     if (currentTab === 'vocab' && activeItems.filter(i => !i.disabled).length === 0) {
         prepareVocabItems();
     }
