@@ -100,61 +100,157 @@ window.switchTab = function(tab) {
 };
 
 window.loadClassData = async function() {
-    const classSelect = document.getElementById('classSelect');
+
+    const classSelect =
+        document.getElementById('classSelect');
+
     if (!classSelect) return;
-    
-    const classInput = classSelect.value; // např. "7.A", "7A" nebo "7a"
-    const cleanClassName = classInput.toLowerCase().replace(/[^a-z0-9]/g, ''); // např. "7a"
 
-    // Možné varianty názvů souborů ve složce data/klassen/
-    const possibleFileNames = [
-        classInput,                    // např. "7.A"
-        classInput + '.json',          // např. "7.A.json"
-        cleanClassName + '.json'       // např. "7a.json"
-    ];
+    const className = classSelect.value;
 
-    let rawData = null;
-    let loadedFileName = "";
+    // Např. 7A
+    const cleanClassName =
+        className
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, '');
 
-    const isGitHub = window.location.hostname.includes("github.io");
-    const BASE_URL = isGitHub ? "/DeutschStudio" : "";
+    // Skutečná cesta:
+    // ../../data/klassen/7A.json
+    const fileName =
+        `${className}.json`;
 
-    // Postupně vyzkoušíme možné cesty a názvy souborů
-    for (let fileName of possibleFileNames>
-        // Pokud fileName už končí na .json, nepřídáváme ho znovu
-        const currentFileName = fileName.endsWith('.json') ? fileName : fileName + '.json';
+    const relativePath =
+        `../../data/klassen/${fileName}`;
 
-        const pathsToTry = [
-            `${BASE_URL}/data/klassen/${currentFileName}`,
-            `../../../data/klassen/${currentFileName}`,
-            `../../data/klassen/${currentFileName}`,
-            `data/klassen/${currentFileName}`
-        ];
+    console.log("👨‍🎓 Načítám třídu:");
+    console.log("   třída:", className);
+    console.log("   cesta:", relativePath);
 
-        for (let path of pathsToTry) {
-            try {
-                let res = await fetch(path);
-                if (res.ok) {
-                    rawData = await res.json();
-                    loadedFileName = currentFileName;
-                    console.log("Úspěšně načteno z:", path);
-                    break;
-                }
-            } catch (e) {
-                // zkoušíme další cestu
-            }
+    try {
+
+        const response =
+            await fetch(relativePath);
+
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
         }
-        if (rawData) break;
-    }
 
-    if (!rawData) {
-        console.error("Nepodařilo se načíst JSON pro třídu:", classInput);
-        sectorColors = generateColorPalette("#1f4e79");
-        activeItems = [];
+        const rawData =
+            await response.json();
+
+        console.log(
+            "✅ Třída načtena:",
+            rawData
+        );
+
+        // JSON může být:
+        // [...]
+        // nebo { students: [...] }
+
+        const students =
+            Array.isArray(rawData)
+                ? rawData
+                : (rawData.students || []);
+
+        const customColor =
+            rawData.classColor ||
+            getColorForClassDefault(
+                cleanClassName
+            );
+
+        sectorColors =
+            generateColorPalette(customColor);
+
+        // Historie zkoušení
+        const history =
+            JSON.parse(
+                localStorage.getItem(
+                    `ds_history_${cleanClassName}`
+                )
+            ) || {};
+
+        activeItems =
+            students.map(student => {
+
+                const firstName =
+                    student.firstName ||
+                    student.jmeno ||
+                    "";
+
+                const lastName =
+                    student.lastName ||
+                    student.prijmeni ||
+                    "";
+
+                const lastInitial =
+                    lastName
+                        ? `${lastName.charAt(0)}.`
+                        : "";
+
+                const id =
+                    student.id ||
+                    firstName;
+
+                return {
+
+                    id: id,
+
+                    // Na kole pouze:
+                    // Petr N.
+                    text:
+                        `${firstName} ${lastInitial}`
+                            .trim(),
+
+                    // V modalu celé jméno
+                    fullName:
+                        `${firstName} ${lastName}`
+                            .trim(),
+
+                    // Už byl zkoušen?
+                    disabled:
+                        !!history[id],
+
+                    // Datum posledního zkoušení
+                    lastTested:
+                        history[id] || null
+                };
+
+            });
+
         renderList();
         drawWheel();
-        return;
+
     }
+    catch (error) {
+
+        console.error(
+            "❌ Chyba při načítání třídy:",
+            error
+        );
+
+        console.error(
+            "Zkoušená cesta:",
+            relativePath
+        );
+
+        activeItems = [];
+
+        sectorColors =
+            generateColorPalette("#1f4e79");
+
+        renderList();
+        drawWheel();
+
+        alert(
+            `Třídu ${className} se nepodařilo načíst.\n\n` +
+            `Soubor:\n${relativePath}\n\n` +
+            `Chyba: ${error.message}`
+        );
+    }
+};
 
     // Podpora pro pole i objekt s klíčem students
     let students = Array.isArray(rawData) ? rawData : (rawData.students || []);
