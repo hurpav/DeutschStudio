@@ -103,37 +103,79 @@ window.loadClassData = async function() {
     const classSelect = document.getElementById('classSelect');
     if (!classSelect) return;
     
-    const classInput = classSelect.value;
-    const cleanClassName = classInput.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const fileName = `${cleanClassName}.json`;
-    const relativePath = `../../../data/klassen/${fileName}`;
+    const classInput = classSelect.value; // např. "7.A", "7A" nebo "7a"
+    const cleanClassName = classInput.toLowerCase().replace(/[^a-z0-9]/g, ''); // např. "7a"
 
-    try {
-        let res = await fetch(relativePath);
-        if (!res.ok) res = await fetch(`/DeutschStudio/data/klassen/${fileName}`);
-        if (!res.ok) throw new Error(`Soubor ${fileName} nebyl nalezen.`);
+    // Možné varianty názvů souborů ve složce data/klassen/
+    const possibleFileNames = [
+        classInput,                    // např. "7.A"
+        classInput + '.json',          // např. "7.A.json"
+        cleanClassName + '.json'       // např. "7a.json"
+    ];
 
-        const rawData = await res.json();
-        let students = Array.isArray(rawData) ? rawData : (rawData.students || []);
-        let customColor = rawData.classColor || getColorForClassDefault(cleanClassName);
+    let rawData = null;
+    let loadedFileName = "";
 
-        sectorColors = generateColorPalette(customColor);
-        const history = JSON.parse(localStorage.getItem(`ds_history_${cleanClassName}`)) || {};
+    const isGitHub = window.location.hostname.includes("github.io");
+    const BASE_URL = isGitHub ? "/DeutschStudio" : "";
 
-        activeItems = students.map(s => {
-            const lastInitial = s.lastName ? `${s.lastName.charAt(0)}.` : '';
-            return {
-                id: s.id,
-                text: `${s.firstName} ${lastInitial}`.trim(),
-                fullName: `${s.firstName} ${s.lastName || ''}`.trim(),
-                disabled: !!history[s.id],
-                lastTested: history[s.id] || null
-            };
-        });
-    } catch (err) {
+    // Postupně vyzkoušíme možné cesty a názvy souborů
+    for (let fileName of possibleFileNames>
+        // Pokud fileName už končí na .json, nepřídáváme ho znovu
+        const currentFileName = fileName.endsWith('.json') ? fileName : fileName + '.json';
+
+        const pathsToTry = [
+            `${BASE_URL}/data/klassen/${currentFileName}`,
+            `../../../data/klassen/${currentFileName}`,
+            `../../data/klassen/${currentFileName}`,
+            `data/klassen/${currentFileName}`
+        ];
+
+        for (let path of pathsToTry) {
+            try {
+                let res = await fetch(path);
+                if (res.ok) {
+                    rawData = await res.json();
+                    loadedFileName = currentFileName;
+                    console.log("Úspěšně načteno z:", path);
+                    break;
+                }
+            } catch (e) {
+                // zkoušíme další cestu
+            }
+        }
+        if (rawData) break;
+    }
+
+    if (!rawData) {
+        console.error("Nepodařilo se načíst JSON pro třídu:", classInput);
         sectorColors = generateColorPalette("#1f4e79");
         activeItems = [];
+        renderList();
+        drawWheel();
+        return;
     }
+
+    // Podpora pro pole i objekt s klíčem students
+    let students = Array.isArray(rawData) ? rawData : (rawData.students || []);
+    let customColor = rawData.classColor || getColorForClassDefault(cleanClassName);
+
+    sectorColors = generateColorPalette(customColor);
+    const history = JSON.parse(localStorage.getItem(`ds_history_${cleanClassName}`)) || {};
+
+    activeItems = students.map(s => {
+        const firstName = s.firstName || s.jmeno || "";
+        const lastName = s.lastName || s.prijmeni || "";
+        const lastInitial = lastName ? `${lastName.charAt(0)}.` : '';
+        
+        return {
+            id: s.id || firstName,
+            text: `${firstName} ${lastInitial}`.trim(),
+            fullName: `${firstName} ${lastName || ''}`.trim(),
+            disabled: !!history[s.id || firstName],
+            lastTested: history[s.id || firstName] || null
+        };
+    });
 
     renderList();
     drawWheel();
