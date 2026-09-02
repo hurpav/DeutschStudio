@@ -1,0 +1,75 @@
+{
+  "classColor": "#7c3aed",
+  "students": [
+    {
+      "id": 1,
+      "firstName": "Vojtěch",
+      "lastName": "Bezák"
+    },
+    {
+      "id": 2,
+      "firstName": "Lucie Ema",
+      "lastName": "Bílková"
+    },
+    {
+      "id": 3,
+      "firstName": "Patrik",
+      "lastName": "Hofman"
+    },
+    {
+      "id": 4,
+      "firstName": "Michaela",
+      "lastName": "Kaiserová"
+    },
+    {
+      "id": 5,
+      "firstName": "Vesna",
+      "lastName": "Kolesová"
+    },
+    {
+      "id": 6,
+      "firstName": "Karolína",
+      "lastName": "Krejnická"
+    },
+    {
+      "id": 7,
+      "firstName": "Anna",
+      "lastName": "Kubernátová"
+    },
+    {
+      "id": 8,
+      "firstName": "Szofia",
+      "lastName": "Kusnir"
+    },
+    {
+      "id": 9,
+      "firstName": "Laura",
+      "lastName": "Lišková"
+    },
+    {
+      "id": 10,
+      "firstName": "Marie",
+      "lastName": "Mayerová"
+    },
+    {
+      "id": 11,
+      "firstName": "Magdaléna",
+      "lastName": "Nováková"
+    },
+    {
+      "id": 12,
+      "firstName": "Marie",
+      "lastName": "Svobodová"
+    },
+    {
+      "id": 13,
+      "firstName": "Edita",
+      "lastName": "Špottová"
+    },
+    {
+      "id": 14,
+      "firstName": "Zuzana",
+      "lastName": "Štuksová"
+    }
+  ]
+}
