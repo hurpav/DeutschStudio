@@ -150,12 +150,11 @@ function openModule(path) {
    OTEVÍRÁNÍ MODULŮ
 ------------------------------------------------------- */
 window.openPictureDictionary = () => openModule("/modules/bildwoerterbuch/index.html");
-window.openDomino = () => openModule("/modules/domino/index.html");
-window.openTrimino = () => openModule("/modules/trimino/index.html");
-window.openSchiffe = () => openModule("/modules/schiffe/index.html");
-window.openRiskuj = () => openModule("/modules/riskuj/index.html");
-window.openFlashcards = () => openModule("/modules/flashcards/index.html");
-window.openTest = () => openModule("/modules/test/index.html");
+window.openDomino = () => openModule("/modules/domino/domino.html");
+window.openTrimino = () => openModule("/modules/trimino/trimino.html");
+window.openSchiffe = () => openModule("/modules/schiffe/schiffe.html");
+window.openRiskuj = () => openModule("/modules/riskuj/riskuj.html");
+window.openFlashcards = () => openModule("/modules/flashcards/flashcards.html");
+window.openTest = () => openModule("/modules/test/test.html");
 // Přidané propojení pro Kolo štěstí (podporuje oba názvy funkcí):
-window.openGlücksrad = () => openModule("/modules/wheel/index.html");
-window.openWheel = () => openModule("/modules/wheel/index.html");
+window.openWheel = () => openModule("/modules/wheel/wheel.html");
