@@ -119,9 +119,9 @@ async function loadSelectedLessonData() {
 
 window.changeVisual = function() {
     visualType = document.getElementById("visualSelect").value;
-    if (visualType === "Level1") maxAttempts = 10;
-    else if (visualType === "Level2") maxAttempts = 12;
-    else if (visualType === "Level3") maxAttempts = 7;
+    if (visualType === "Level0") maxAttempts = 10;
+    else if (visualType === "Level1") maxAttempts = 12;
+    else if (visualType === "Level2") maxAttempts = 7;
     
     initGame();
 };
@@ -213,7 +213,7 @@ function renderWordMask() {
 function updateVisualDisplay() {
     const box = document.getElementById("visualBox");
     
-    if (visualType === "Level1") {
+    if (visualType === "Level0") {
         let heartsHtml = "";
         const livesLeft = maxAttempts - wrongAttempts;
         for (let i = 0; i < maxAttempts; i++) {
@@ -225,8 +225,8 @@ function updateVisualDisplay() {
         }
         box.innerHTML = `<div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; max-width: 500px;">${heartsHtml}</div>`;
     } 
-    else if (visualType === "Level2") {
-        // Level 2: Celkem 12 chyb (stavíme od nuly: podlaha, tyče, provaz, panáček)
+    else if (visualType === "Level1") {
+        // Level 1: Celkem 12 chyb (stavíme od nuly: podlaha, tyče, provaz, panáček)
         const stepsLevel2 = [
             /* 0 chyb: čisté plátno */
             '',
@@ -252,15 +252,15 @@ function updateVisualDisplay() {
             '<line x1="20" y1="170" x2="140" y2="170" /><line x1="50" y1="170" x2="50" y2="20" /><line x1="50" y1="20" x2="110" y2="20" /><line x1="50" y1="50" x2="80" y2="20" /><line x1="110" y1="20" x2="110" y2="50" /><circle cx="110" cy="70" r="20" /><line x1="110" y1="90" x2="110" y2="130" /><line x1="110" y1="105" x2="85" y2="120" /><line x1="110" y1="105" x2="135" y2="120" /><line x1="110" y1="130" x2="90" y2="160" />',
             /* 11: pravá noha */
             '<line x1="20" y1="170" x2="140" y2="170" /><line x1="50" y1="170" x2="50" y2="20" /><line x1="50" y1="20" x2="110" y2="20" /><line x1="50" y1="50" x2="80" y2="20" /><line x1="110" y1="20" x2="110" y2="50" /><circle cx="110" cy="70" r="20" /><line x1="110" y1="90" x2="110" y2="130" /><line x1="110" y1="105" x2="85" y2="120" /><line x1="110" y1="105" x2="135" y2="120" /><line x1="110" y1="130" x2="90" y2="160" /><line x1="110" y1="130" x2="130" y2="160" />',
-            /* 12: konec (přidáme třeba křížky do očí panáčka) */
+            /* 12: konec */
             '<line x1="20" y1="170" x2="140" y2="170" /><line x1="50" y1="170" x2="50" y2="20" /><line x1="50" y1="20" x2="110" y2="20" /><line x1="50" y1="50" x2="80" y2="20" /><line x1="110" y1="20" x2="110" y2="50" /><circle cx="110" cy="70" r="20" /><line x1="110" y1="90" x2="110" y2="130" /><line x1="110" y1="105" x2="85" y2="120" /><line x1="110" y1="105" x2="135" y2="120" /><line x1="110" y1="130" x2="90" y2="160" /><line x1="110" y1="130" x2="130" y2="160" /><line x1="100" y1="62" x2="108" y2="70" /><line x1="108" y1="62" x2="100" y2="70" /><line x1="112" y1="62" x2="120" y2="70" /><line x1="120" y1="62" x2="112" y2="70" />'
         ];
         box.innerHTML = `<svg class="gallows-svg" viewBox="0 0 160 190">${stepsLevel2[wrongAttempts]}</svg>`;
     }
-    else if (visualType === "Level3") {
-        // Level 3: Šibenice už stojí, věší se jen panáček (7 chyb: 0=prázdno, 1=hlava, 2=tělo, 3=l.ruka, 4=p.ruka, 5=l.noha, 6=p.noha)
+    else if (visualType === "Level2") {
+        // Level 2: Šibenice už stojí, věší se jen panáček (7 chyb)
         const stepsLevel3 = [
-            /* 0 chyb: hotová šibenice, nikdo tu není */
+            /* 0 chyb: hotová šibenice */
             '<line x1="20" y1="170" x2="140" y2="170" /><line x1="50" y1="170" x2="50" y2="20" /><line x1="50" y1="20" x2="110" y2="20" /><line x1="50" y1="50" x2="80" y2="20" /><line x1="110" y1="20" x2="110" y2="50" />',
             /* 1: hlava */
             '<line x1="20" y1="170" x2="140" y2="170" /><line x1="50" y1="170" x2="50" y2="20" /><line x1="50" y1="20" x2="110" y2="20" /><line x1="50" y1="50" x2="80" y2="20" /><line x1="110" y1="20" x2="110" y2="50" /><circle cx="110" cy="70" r="20" />',
@@ -278,7 +278,6 @@ function updateVisualDisplay() {
         box.innerHTML = `<svg class="gallows-svg" viewBox="0 0 160 190">${stepsLevel3[wrongAttempts]}</svg>`;
     }
 }
-
 function renderKeyboard() {
     const kb = document.getElementById("keyboard");
     kb.innerHTML = "";
