@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeutschStudio – Hangman (Šibenice)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+
+        :root {
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --primary: #1e40af;
+            --primary-hover: #1d4ed8;
+            --border: #e2e8f0;
+            --der: #1e40af;
+            --die: #dc2626;
+            --das: #059669;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 750px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: #475569;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: var(--primary);
+        }
+
+        .controls-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 12px;
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+            min-width: 130px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        select, button {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 0.95rem;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Hrací plocha */
+        .game-card {
+            background: var(--card-bg);
+            border: 4px solid var(--border);
+            border-radius: 16px;
+            width: 100%;
+            padding: 30px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Zvětšená vizuální plocha */
+        .visual-box {
+            height: 200px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        /* Vylepšená grafická šibenice */
+        .gallows-svg {
+            width: 160px;
+            height: 180px;
+            stroke: #334155;
+            stroke-width: 5;
+            stroke-linecap: round;
+            fill: none;
+        }
+
+        .gallows-part {
+            transition: opacity 0.3s ease;
+        }
+
+        /* Skrytá nápověda / Překlad */
+        .hint-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            background: #f1f5f9;
+            padding: 8px 16px;
+            border-radius: 10px;
+        }
+
+        .translation-hint {
+            font-size: 1.25rem;
+            color: #334155;
+            font-weight: 600;
+        }
+
+        .translation-hint.hidden {
+            filter: blur(6px);
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .eye-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #475569;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .eye-btn:hover {
+            color: var(--primary);
+        }
+
+        /* Člen a skryté slovo */
+        .word-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 10px 0 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .article-box {
+            font-size: 2.5rem;
+            font-weight: 700;
+            padding: 4px 14px;
+            border-radius: 10px;
+            background: #f1f5f9;
+        }
+
+        .letters-container {
+            display: flex;
+            gap: 10px;
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: 6px;
+        }
+
+        .letter-slot {
+            border-bottom: 5px solid var(--text);
+            min-width: 40px;
+            text-align: center;
+            display: inline-block;
+        }
+
+        /* Klávesnice pro hádání */
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            max-width: 650px;
+            margin-top: 15px;
+        }
+
+        .key-btn {
+            width: 45px;
+            height: 48px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .key-btn:hover:not(:disabled) {
+            background: #e2e8f0;
+        }
+
+        .key-btn:disabled {
+            background: #cbd5e1;
+            color: #64748b;
+            border-color: #cbd5e1;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .status-message {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 15px 0;
+            min-height: 35px;
+        }
+
+        .next-btn {
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
+        /* Režim celé obrazovky – schová ovládání, zvětší plochu pro žáky vzadu */
+        body.fullscreen-mode {
+            background: #0f172a !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            height: 100vh !important;
+            margin: 0 !important;
+            overflow: hidden !important;
+        }
+
+        body.fullscreen-mode .header,
+        body.fullscreen-mode .controls-box {
+            display: none !important;
+        }
+
+        body.fullscreen-mode .container {
+            max-width: 1000px !important;
+            width: 95% !important;
+        }
+
+        body.fullscreen-mode .game-card {
+            padding: 40px !important;
+            border: none !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        body.fullscreen-mode .visual-box {
+            height: 280px !important;
+        }
+
+        body.fullscreen-mode .gallows-svg {
+            width: 220px !important;
+            height: 260px !important;
+        }
+
+        body.fullscreen-mode .letters-container {
+            font-size: 4rem !important;
+            gap: 15px !important;
+        }
+
+        body.fullscreen-mode .letter-slot {
+            min-width: 55px !important;
+            border-bottom: 7px solid var(--text) !important;
+        }
+
+        body.fullscreen-mode .article-box {
+            font-size: 3.5rem !important;
+            padding: 8px 20px !important;
+        }
+
+        body.fullscreen-mode .translation-hint {
+            font-size: 1.8rem !important;
+        }
+
+        body.fullscreen-mode .key-btn {
+            width: 55px !important;
+            height: 58px !important;
+            font-size: 1.5rem !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <a href="../../index.html" class="back-link"><i class="fas fa-home"></i> Zpět na Dashboard</a>
+            <h1><i class="fas fa-gavel"></i> Galgenmann (Oběšenec)</h1>
+        </div>
+
+        <div class="controls-box">
+            <div class="control-group">
+                <label for="bookSelect">Učebnice:</label>
+                <select id="bookSelect" onchange="onBookChange()"></select>
+            </div>
+            <div class="control-group">
+                <label for="lessonSelect">Lekce:</label>
+                <select id="lessonSelect" onchange="onLessonChange()"></select>
+            </div>
+            <div class="control-group">
+                <label for="visualSelect">Vizuál:</label>
+                <select id="visualSelect" onchange="changeVisual()">
+                    <option value="Level1">Level 1 (Gangelmann – 12 Leben)</option>
+                    <option value="Level2">Level 2 (Gangelmann – 7 Leben)</option>
+                    <option value="Level0">Level 0 (Herzen – 10 Leben)</option>
+                    </select>
+            </div>
+            <div class="control-group" style="justify-content: flex-end; flex: 0;">
+                <label>&nbsp;</label>
+                            </div>
+            <div class="control-group" style="justify-content: flex-end; flex: 0;">
+            <label>&nbsp;</label>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn-primary" onclick="toggleFullScreen()" title="Full Screen"><i class="fas fa-expand"></i></button>
+                <button class="base-btn btn-primary" onclick="initGame()" title="Neues Wort"><i class="fas fa-rotate"></i> Neues Wort</button>
+            </div>
+</div>
+        </div>
+
+        <!-- Hrací pole -->
+        <div class="game-card" id="gameCard">
+            <div class="visual-box" id="visualBox">
+                <!-- Vykreslení šibenice nebo srdíček -->
+            </div>
+
+            <!-- Nápověda s možností skrytí -->
+            <div class="hint-box">
+                <span style="font-size: 0.9rem; font-weight: 600; color: #64748b;">Překlad:</span>
+                <span class="translation-hint" id="translationHint" title="Kliknutím odhalíte" onclick="toggleHint()">-</span>
+                <button class="eye-btn" id="eyeBtn" onclick="toggleHint()" title="Zobrazit/skrýt nápovědu">
+                    <i class="fas fa-eye-slash" id="eyeIcon"></i>
+                </button>
+            </div>
+
+            <div class="word-display">
+                <div class="article-box" id="articleBox" style="display: none;">?</div>
+                <div class="letters-container" id="lettersContainer"></div>
+            </div>
+
+            <div class="status-message" id="statusMessage"></div>
+
+            <div class="keyboard" id="keyboard"></div>
+
+            <button class="btn-primary next-btn" id="nextBtn" style="display: none;" onclick="initGame()">Další slovíčko <i class="fas fa-arrow-right"></i></button>
+        </div>
+    </div>
+
+    <script type="module" src="hangman.js"></script>
+</body>
+</html>
