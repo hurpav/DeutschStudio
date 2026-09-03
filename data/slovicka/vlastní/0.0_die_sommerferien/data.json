@@ -1,0 +1,138 @@
+{
+  "id": "Sommer",
+  "title": "Sommerferien (Aktivitäten)",
+  "ucebnice": "Vlastní",
+  "folder": "sommerferien",
+  "words": [
+    {
+      "artikel": "der",
+      "de": "Sommer",
+      "cz": "léto"
+    },
+    {
+      "artikel": "die",
+      "de": "Ferien",
+      "cz": "prázdniny"
+    },
+    {
+      "artikel": "",
+      "de": "ans Meer fahren",
+      "cz": "jet k moři"
+    },
+    {
+      "artikel": "",
+      "de": "Oma / Opa besuchen",
+      "cz": "navštívit babičku / dědečka"
+    },
+    {
+      "artikel": "",
+      "de": "am Wasser campen",
+      "cz": "kempovat u vody"
+    },
+    {
+      "artikel": "",
+      "de": "zelten",
+      "cz": "stanovat"
+    },
+    {
+      "artikel": "",
+      "de": "Eis essen",
+      "cz": "jíst zmrzlinu"
+    },
+    {
+      "artikel": "",
+      "de": "Cocktail trinken",
+      "cz": "pít koktejl"
+    },
+    {
+      "artikel": "",
+      "de": "im Meer baden",
+      "cz": "koupat se v moři"
+    },
+    {
+      "artikel": "die",
+      "de": "Stadt besuchen",
+      "cz": "navštívit město"
+    },
+    {
+      "artikel": "",
+      "de": "fotografieren",
+      "cz": "fotografovat"
+    },
+    {
+      "artikel": "",
+      "de": "sonnenbaden",
+      "cz": "opalovat se"
+    },
+    {
+      "artikel": "",
+      "de": "im Schwimmbad schwimmen",
+      "cz": "plavat v bazénu"
+    },
+    {
+      "artikel": "",
+      "de": "im Park chillen",
+      "cz": "odpočívat v parku"
+    },
+    {
+      "artikel": "",
+      "de": "ein Buch lesen",
+      "cz": "číst knihu"
+    },
+    {
+      "artikel": "",
+      "de": "mit dem Hund spazieren",
+      "cz": "jít na procházku se psem"
+    },
+    {
+      "artikel": "",
+      "de": "im Einkaufszentrum einkaufen",
+      "cz": "nakupovat v nákupním centru"
+    },
+    {
+      "artikel": "",
+      "de": "mit dem Zug/Bus/Auto fahren",
+      "cz": "jet vlakem/autobusem/autem"
+    },
+    {
+      "artikel": "",
+      "de": "einen Ausflug machen",
+      "cz": "udělat si výlet"
+    },
+    {
+      "artikel": "",
+      "de": "im Meer tauchen",
+      "cz": "potápět se v moři"
+    },
+    {
+      "artikel": "",
+      "de": "ein Picknick machen",
+      "cz": "udělat si piknik"
+    },
+    {
+      "artikel": "",
+      "de": "im Garten grillen",
+      "cz": "grilovat na zahradě"
+    },
+    {
+      "artikel": "",
+      "de": "reisen",
+      "cz": "cestovat"
+    },
+    {
+      "artikel": "",
+      "de": "fliegen nach...",
+      "cz": "letět do..."
+    },
+    {
+      "artikel": "",
+      "de": "die Natur fotografieren",
+      "cz": "fotografovat přírodu"
+    },
+    {
+      "artikel": "",
+      "de": "Beach Volleyball spielen",
+      "cz": "hrát plážový volejbal"
+    }
+  ]
+}

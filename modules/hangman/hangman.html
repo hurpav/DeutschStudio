@@ -197,13 +197,14 @@
         }
 
         /* Člen a skryté slovo */
-        .word-display {
+      .word-display {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 15px;
             margin: 10px 0 20px 0;
-            flex-wrap: wrap;
+            width: 100%;
         }
 
         .article-box {
@@ -214,19 +215,29 @@
             background: #f1f5f9;
         }
 
-        .letters-container {
+      .letters-container {
             display: flex;
-            gap: 10px;
-            font-size: 2.8rem;
+            flex-wrap: wrap; /* Povolí zalamování na další řádek, když je fráze dlouhá */
+            justify-content: center;
+            gap: 12px;
+            font-size: 2.5rem;
             font-weight: 700;
-            letter-spacing: 6px;
+            max-width: 90%;
         }
 
-        .letter-slot {
+     .letter-slot {
             border-bottom: 5px solid var(--text);
-            min-width: 40px;
+            min-width: 35px;
+            height: 50px;
             text-align: center;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Styl pro mezeru mezi slovy ve víceslovných frázích */
+        .word-space {
+            width: 25px; /* Mezera mezi slovy */
+            border-bottom: none;
         }
 
         /* Klávesnice pro hádání */

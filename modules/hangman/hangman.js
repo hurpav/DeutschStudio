@@ -200,11 +200,16 @@ function renderWordMask() {
     const cleanWord = currentWordObj.word.toUpperCase();
     for (let char of cleanWord) {
         const slot = document.createElement("span");
-        slot.className = "letter-slot";
-        if (guessedLetters.has(char) || !/[A-ZÄÖÜß]/.test(char)) {
-            slot.innerText = char;
+        
+        if (char === ' ') {
+            slot.className = "word-space"; // Zde bude jen prázdná mezera bez podtržení
         } else {
-            slot.innerText = "_";
+            slot.className = "letter-slot";
+            if (guessedLetters.has(char) || !/[A-ZÄÖÜß]/.test(char)) {
+                slot.innerText = char;
+            } else {
+                slot.innerText = "_";
+            }
         }
         container.appendChild(slot);
     }
@@ -302,8 +307,14 @@ function handleGuess(letter, btn) {
     if (cleanWord.includes(letter)) {
         renderWordMask();
         checkWinCondition();
-    } else {
+  } else {
         wrongAttempts++;
+        
+        // Pokud stavíme šibenici (Level 1 nebo Level 2), přehrajeme zvuk dřeva
+        if (visualType === "Level1" || visualType === "Level2") {
+            playWoodSound();
+        }
+
         updateVisualDisplay();
         checkLoseCondition();
     }
@@ -372,5 +383,29 @@ document.addEventListener("fullscreenchange", () => {
         document.body.classList.remove('fullscreen-mode');
     }
 });
+function playWoodSound() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Vytvoříme oscilátor pro hlubší dřevěný tón
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
+        
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+        
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+    } catch (e) {
+        console.error("Audio Context nepodporován nebo zablokován prohlížečem", e);
+    }
+}
 
 window.addEventListener("DOMContentLoaded", initHangman);

@@ -111,6 +111,12 @@
     "id": "4.3-TÉMA",
     "title": "3.2 Die Sommerferien - (Výběr)",
     "ucebnice": "maximal2",
-    "folder": "4.3_Die Sommerferien"
+    "folder": "4.3_Die_Sommerferien"
+  },
+  {
+    "id": "0.0-TÉMA",
+    "title": "Die Sommerferien (Aktivitäten)",
+    "ucebnice": "vlastní",
+    "folder": "0.0_Die_Sommerferien"
   }
 ]

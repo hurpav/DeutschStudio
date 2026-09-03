@@ -228,6 +228,7 @@ window.openPictureDictionary = () => openModule("/modules/bildwoerterbuch/bildwo
 window.openDomino = () => openModule("/modules/domino/domino.html");
 window.openTrimino = () => openModule("/modules/trimino/trimino.html");
 window.openWheel = () => openModule("/modules/wheel/wheel.html");
+window.openHangman = () => openModule("/modules/hangman/hangman.html");
 window.openSchiffe = () => openModule("/modules/schiffe/schiffe.html");
 window.openRiskuj = () => openModule("/modules/riskuj/riskuj.html");
 window.openFlashcards = () => openModule("/modules/flashcards/flashcards.html");
