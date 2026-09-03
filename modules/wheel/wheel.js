@@ -1,120 +1,64 @@
 // ============================================================
-// DeutschStudio – Wheel
-// Losování žáků + procvičování slovní zásoby
+// DeutschStudio – Glücksrad (Kolo štěstí)
+// Kompletní logika pro žáky a slovní zásobu
 // ============================================================
 
-// ------------------------------------------------------------
-// STAV APLIKACE
-// ------------------------------------------------------------
-
 let currentTab = 'students';
-
 let activeItems = [];
 let selectedItemIndex = null;
 
-// Skóre slovní zásoby
 let correctAnswersCount = 0;
 let wrongAnswersCount = 0;
-let totalVocabCount = 0;
+let totalVocabCount = 15;
 
-// Barvy kola
 let baseColor = "#1f4e79";
 let sectorColors = [];
 
-// Rotace kola
 let startAngle = 0;
 let isSpinning = false;
 let spinVelocity = 0;
 let friction = 0.985;
 let animFrameId = null;
 let lastSoundSector = -1;
-
-
-// ============================================================
-// AUDIO
-// ============================================================
+let skippedWordsCount = 0;
+const MAX_SKIPS = 2;
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function playTickSound() {
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-
+    if (audioCtx.state === 'suspended') audioCtx.resume();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(
-        150,
-        audioCtx.currentTime + 0.04
-    );
-
+    osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.04);
     gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-    gain.gain.linearRampToValueAtTime(
-        0.01,
-        audioCtx.currentTime + 0.04
-    );
-
+    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
-
     osc.start();
     osc.stop(audioCtx.currentTime + 0.04);
 }
 
-
 function playWinSound() {
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-
-    const notes = [
-        523.25,
-        659.25,
-        783.99,
-        1046.50
-    ];
-
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const notes = [523.25, 659.25, 783.99, 1046.50];
     notes.forEach((freq, i) => {
-
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-
-        const startTime =
-            audioCtx.currentTime + i * 0.1;
-
         osc.type = 'sine';
         osc.frequency.value = freq;
-
-        gain.gain.setValueAtTime(
-            0.2,
-            startTime
-        );
-
-        gain.gain.exponentialRampToValueAtTime(
-            0.001,
-            startTime + 0.3
-        );
-
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime + i * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.1 + 0.3);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-
-        osc.start(startTime);
-        osc.stop(startTime + 0.3);
+        osc.start(audioCtx.currentTime + i * 0.1);
+        osc.stop(audioCtx.currentTime + i * 0.1 + 0.3);
     });
 }
 
-
-// ============================================================
-// BARVY
-// ============================================================
-
 function generateColorPalette(hexColor) {
-
     baseColor = hexColor || "#1f4e79";
-
     return [
         adjustColorBrightness(baseColor, 0),
         adjustColorBrightness(baseColor, 25),
@@ -124,1942 +68,679 @@ function generateColorPalette(hexColor) {
     ];
 }
 
-
 function adjustColorBrightness(hex, percent) {
-
-    let num = parseInt(
-        hex.replace('#', ''),
-        16
-    );
-
+    let num = parseInt(hex.replace('#', ''), 16);
     let amt = Math.round(2.55 * percent);
-
     let R = (num >> 16) + amt;
     let G = ((num >> 8) & 0x00FF) + amt;
     let B = (num & 0x0000FF) + amt;
-
-    R = R < 1 ? 0 : R > 255 ? 255 : R;
-    G = G < 1 ? 0 : G > 255 ? 255 : G;
-    B = B < 1 ? 0 : B > 255 ? 255 : B;
-
-    return '#' +
-        (
-            0x1000000 +
-            R * 0x10000 +
-            G * 0x100 +
-            B
-        )
-        .toString(16)
-        .slice(1);
+    return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + 
+        (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + 
+        (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
 }
 
+function getGenderColor(article) {
+    if (!article) return '#0f172a';
+    const art = article.toLowerCase().trim();
+    if (art === 'der') return '#1e40af';
+    if (art === 'die') return '#dc2626';
+    if (art === 'das') return '#059669';
+    return '#0f172a';
+}
 
-// ============================================================
-// BARVY TŘÍD
-// ============================================================
+document.addEventListener("DOMContentLoaded", () => {
+    switchTab('students');
+});
+
+window.switchTab = function(tab) {
+    currentTab = tab;
+    document.getElementById('tabStudentsBtn')?.classList.toggle('active', tab === 'students');
+    document.getElementById('tabVocabBtn')?.classList.toggle('active', tab === 'vocab');
+    
+    document.getElementById('controlsStudents')?.classList.toggle('hidden', tab !== 'students');
+    document.getElementById('controlsVocab')?.classList.toggle('hidden', tab !== 'vocab');
+    document.getElementById('vocabScoreTracker')?.classList.toggle('hidden', tab !== 'vocab');
+
+    if (tab === 'students') {
+        const titleElem = document.getElementById('listTitle');
+        if (titleElem) titleElem.innerText = 'Klassenliste / Liste der Schüler:';
+        loadClassData();
+    } else {
+        const titleElem = document.getElementById('listTitle');
+        if (titleElem) titleElem.innerText = 'Wortschatzliste im Rad:';
+        prepareVocabItems();
+    }
+};
+
+window.loadClassData = async function() {
+    const classSelect = document.getElementById('classSelect');
+    if (!classSelect) return;
+    
+    const classInput = classSelect.value;
+    const cleanClassName = classInput.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    const possibleFileNames = [`${classInput}.json`, `${cleanClassName}.json`];
+    let rawData = null;
+
+    const isGitHub = window.location.hostname.includes("github.io");
+    const BASE_URL = isGitHub ? "/DeutschStudio" : "";
+
+    for (let fileName of possibleFileNames) {
+        const pathsToTry = [
+            `${BASE_URL}/data/klassen/${fileName}`,
+            `../../data/klassen/${fileName}`,
+            `data/klassen/${fileName}`
+        ];
+
+        for (let path of pathsToTry) {
+            try {
+                let res = await fetch(path);
+                if (res.ok) {
+                    rawData = await res.json();
+                    break;
+                }
+            } catch (e) {}
+        }
+        if (rawData) break;
+    }
+
+    if (!rawData) {
+        sectorColors = generateColorPalette("#1f4e79");
+        activeItems = [];
+        renderList();
+        drawWheel();
+        return;
+    }
+
+    let students = Array.isArray(rawData) ? rawData : (rawData.students || []);
+    let customColor = rawData.classColor || getColorForClassDefault(cleanClassName);
+
+    sectorColors = generateColorPalette(customColor);
+    const history = JSON.parse(localStorage.getItem(`ds_history_${cleanClassName}`)) || {};
+
+    activeItems = students.map(s => {
+        const firstName = s.firstName || s.jmeno || "";
+        const lastName = s.lastName || s.prijmeni || "";
+        const lastInitial = lastName ? `${lastName.charAt(0)}.` : '';
+        
+        return {
+            id: s.id || firstName,
+            text: `${firstName} ${lastInitial}`.trim(),
+            fullName: `${firstName} ${lastName}`.trim(),
+            disabled: !!history[s.id || firstName],
+            lastTested: history[s.id || firstName] || null,
+            color: '#0f172a'
+        };
+    });
+
+    renderList();
+    drawWheel();
+};
 
 function getColorForClassDefault(className) {
-
-    className = className.toLowerCase();
-
-    if (className.includes('7a')) return '#059669';
-    if (className.includes('7b')) return '#d97706';
-    if (className.includes('8a')) return '#dc2626';
-    if (className.includes('8b')) return '#2563eb';
-    if (className.includes('9a')) return '#7c3aed';
-
+    if (className.includes('7a')) return '#059669'; 
+    if (className.includes('7b')) return '#d97706'; 
+    if (className.includes('8a')) return '#dc2626'; 
+    if (className.includes('8b')) return '#2563eb'; 
+    if (className.includes('9a')) return '#7c3aed'; 
     return '#1f4e79';
 }
 
-
-// ============================================================
-// START
-// ============================================================
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    console.log("🎡 DeutschStudio Wheel start");
-
-    switchTab('students');
-
-});
-
-
-// ============================================================
-// PŘEPÍNÁNÍ ZÁLOŽEK
-// ============================================================
-
-window.switchTab = function(tab) {
-
-    currentTab = tab;
-
-    const tabStudentsBtn =
-        document.getElementById('tabStudentsBtn');
-
-    const tabVocabBtn =
-        document.getElementById('tabVocabBtn');
-
-    const controlsStudents =
-        document.getElementById('controlsStudents');
-
-    const controlsVocab =
-        document.getElementById('controlsVocab');
-
-    const vocabScoreTracker =
-        document.getElementById('vocabScoreTracker');
-
-    const listTitle =
-        document.getElementById('listTitle');
-
-
-    tabStudentsBtn?.classList.toggle(
-        'active',
-        tab === 'students'
-    );
-
-    tabVocabBtn?.classList.toggle(
-        'active',
-        tab === 'vocab'
-    );
-
-
-    controlsStudents?.classList.toggle(
-        'hidden',
-        tab !== 'students'
-    );
-
-    controlsVocab?.classList.toggle(
-        'hidden',
-        tab !== 'vocab'
-    );
-
-    vocabScoreTracker?.classList.toggle(
-        'hidden',
-        tab !== 'vocab'
-    );
-
-
-    if (tab === 'students') {
-
-        if (listTitle) {
-            listTitle.innerText =
-                'Klassenliste / Liste der Schüler:';
-        }
-
-        loadClassData();
-
-    } else {
-
-        if (listTitle) {
-            listTitle.innerText =
-                'Wortschatzliste im Rad:';
-        }
-
-        prepareVocabItems();
-
-    }
-};
-
-
-// ============================================================
-// POMOCNÁ FUNKCE PRO NALEZENÍ DATA
-// ============================================================
-//
-// Protože wheel.html může být později přesunut,
-// zkusíme několik možných relativních cest.
-// V konzoli vždy uvidíš, která cesta byla použita.
-// ============================================================
-
-async function fetchJSONFromPossiblePaths(paths) {
-
-    let lastError = null;
-
-    for (const path of paths) {
-
-        try {
-
-            console.log("🔎 Zkouším:", path);
-
-            const response = await fetch(path);
-
-            if (!response.ok) {
-
-                lastError =
-                    new Error(
-                        `HTTP ${response.status}`
-                    );
-
-                continue;
-            }
-
-            const data = await response.json();
-
-            console.log(
-                "✅ JSON načten z:",
-                path
-            );
-
-            return {
-                data,
-                path
-            };
-
-        } catch (error) {
-
-            lastError = error;
-
-            console.warn(
-                "⚠️ Cesta nefunguje:",
-                path,
-                error
-            );
-        }
-    }
-
-    throw lastError ||
-        new Error("JSON nebylo možné načíst.");
-}
-
-
-// ============================================================
-// NAČTENÍ TŘÍDY
-// ============================================================
-
-window.loadClassData = async function() {
-
-    const classSelect =
-        document.getElementById('classSelect');
-
-    if (!classSelect) {
-
-        console.error(
-            "❌ Element #classSelect nebyl nalezen."
-        );
-
-        return;
-    }
-
-
-    const className =
-        classSelect.value;
-
-    if (!className) {
-
-        console.warn(
-            "⚠️ Nebyla vybrána žádná třída."
-        );
-
-        return;
-    }
-
-
-    const cleanClassName =
-        className
-            .toLowerCase()
-            .replace(/[^a-z0-9]/g, '');
-
-
-    console.log(
-        "👨‍🎓 Načítám třídu:",
-        className
-    );
-
-
-    const fileName =
-        `${className}.json`;
-
-
-    // Standardní cesta při struktuře:
-    //
-    // dashboard/wheel/wheel.html
-    // data/klassen/7A.json
-    //
-    // tedy ../../data/klassen/7A.json
-
-    const possiblePaths = [
-
-        `../../data/klassen/${fileName}`,
-
-        `../data/klassen/${fileName}`,
-
-        `./data/klassen/${fileName}`,
-
-        `../../../data/klassen/${fileName}`
-
-    ];
-
-
-    try {
-
-        const result =
-            await fetchJSONFromPossiblePaths(
-                possiblePaths
-            );
-
-
-        const rawData =
-            result.data;
-
-
-        console.log(
-            "📦 Data třídy:",
-            rawData
-        );
-
-
-        // JSON může být:
-        //
-        // [
-        //   {...},
-        //   {...}
-        // ]
-        //
-        // nebo:
-        //
-        // {
-        //   "students": [...]
-        // }
-
-        const students =
-            Array.isArray(rawData)
-                ? rawData
-                : (
-                    Array.isArray(rawData.students)
-                        ? rawData.students
-                        : []
-                );
-
-
-        if (students.length === 0) {
-
-            throw new Error(
-                "JSON byl načten, ale neobsahuje žádné žáky."
-            );
-        }
-
-
-        // Barva třídy
-        const customColor =
-            rawData.classColor ||
-            getColorForClassDefault(
-                cleanClassName
-            );
-
-
-        sectorColors =
-            generateColorPalette(
-                customColor
-            );
-
-
-        // Historie zkoušení
-        let history = {};
-
-        try {
-
-            history =
-                JSON.parse(
-                    localStorage.getItem(
-                        `ds_history_${cleanClassName}`
-                    )
-                ) || {};
-
-        } catch (error) {
-
-            console.warn(
-                "⚠️ Historie nebyla čitelná, používám prázdnou.",
-                error
-            );
-
-            history = {};
-        }
-
-
-        // Vytvoření prvků kola
-        activeItems =
-            students.map((student, index) => {
-
-                const firstName =
-                    student.firstName ||
-                    student.jmeno ||
-                    student.name ||
-                    "";
-
-
-                const lastName =
-                    student.lastName ||
-                    student.prijmeni ||
-                    "";
-
-
-                const lastInitial =
-                    lastName
-                        ? `${lastName.charAt(0)}.`
-                        : "";
-
-
-                const id =
-                    student.id ??
-                    `${firstName}_${index}`;
-
-
-                return {
-
-                    id: id,
-
-                    // Text na kole:
-                    // Petr N.
-                    text:
-                        `${firstName} ${lastInitial}`
-                            .trim(),
-
-                    // Celé jméno v modalu
-                    fullName:
-                        `${firstName} ${lastName}`
-                            .trim(),
-
-                    // Už byl zkoušen?
-                    disabled:
-                        !!history[id],
-
-                    // Datum
-                    lastTested:
-                        history[id] || null
-
-                };
-
-            });
-
-
-        selectedItemIndex = null;
-
-        console.log(
-            "👨‍🎓 Načteno žáků:",
-            activeItems.length
-        );
-
-
-        renderList();
-        drawWheel();
-
-
-    } catch (error) {
-
-        console.error(
-            "❌ Chyba při načítání třídy:",
-            error
-        );
-
-
-        activeItems = [];
-
-        sectorColors =
-            generateColorPalette(
-                "#1f4e79"
-            );
-
-
-        renderList();
-        drawWheel();
-
-
-        alert(
-            `Třídu ${className} se nepodařilo načíst.\n\n` +
-            `Hledaný soubor:\n${fileName}\n\n` +
-            `Chyba:\n${error.message}`
-        );
-    }
-};
-
-
-// ============================================================
-// NAČTENÍ SLOVNÍ ZÁSOBY
-// ============================================================
-
 window.prepareVocabItems = async function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const ucebnice = urlParams.get('ucebnice') || 'maximal1';
+    const folder = urlParams.get('folder') || '1.1_wer_bist_du';
+    
+    const lang = document.getElementById('langSelect')?.value || 'de';
+    const count = parseInt(document.getElementById('countSelect')?.value || 15, 10);
 
-    const urlParams =
-        new URLSearchParams(
-            window.location.search
-        );
-
-
-    const ucebnice =
-        urlParams.get('ucebnice') ||
-        'maximal1';
-
-
-    const folder =
-        urlParams.get('folder') ||
-        '2.2_schulsachen';
-
-
-    const lang =
-        document.getElementById('langSelect')?.value ||
-        'de';
-
-
-    const countElem =
-        document.getElementById('countSelect');
-
-
-    const requestedCount =
-        countElem
-            ? parseInt(
-                countElem.value,
-                10
-            )
-            : 15;
-
-
-    // Reset skóre
     correctAnswersCount = 0;
     wrongAnswersCount = 0;
+    totalVocabCount = count;
+    skippedWordsCount = 0;
 
+    sectorColors = generateColorPalette("#0f766e");
 
-    sectorColors =
-        generateColorPalette(
-            "#0f766e"
-        );
-
-
-    console.log(
-        "📚 Načítám slovní zásobu:"
-    );
-
-    console.log(
-        "   učebnice:",
-        ucebnice
-    );
-
-    console.log(
-        "   lekce:",
-        folder
-    );
-
-    console.log(
-        "   jazyk:",
-        lang
-    );
-
-
-    const fileName =
-        "data.json";
-
-
-    // Při struktuře:
-    //
-    // data/
-    //   slovicka/
-    //     maximal1/
-    //       2.2_schulsachen/
-    //         data.json
-    //
-    // a wheel.html v dashboard/wheel/
-    // je správně:
-    //
-    // ../../data/slovicka/...
-
-    const possiblePaths = [
-
-        `../../data/slovicka/${ucebnice}/${folder}/${fileName}`,
-
-        `../data/slovicka/${ucebnice}/${folder}/${fileName}`,
-
-        `./data/slovicka/${ucebnice}/${folder}/${fileName}`,
-
-        `../../../data/slovicka/${ucebnice}/${folder}/${fileName}`
-
-    ];
-
+    const isGitHub = window.location.hostname.includes("github.io");
+    const BASE_URL = isGitHub ? "/DeutschStudio" : "";
+    const fullPath = `${BASE_URL}/data/slovicka/${ucebnice}/${folder}/data.json`;
 
     try {
+        let res = await fetch(fullPath);
+        if (!res.ok) res = await fetch(`../../data/slovicka/${ucebnice}/${folder}/data.json`);
+        if (!res.ok) throw new Error("Keine Wörter gefunden");
 
-        const result =
-            await fetchJSONFromPossiblePaths(
-                possiblePaths
-            );
-
-
-        const data =
-            result.data;
-
-
-        console.log(
-            "📦 Data slovní zásoby:",
-            data
-        );
-
-
-        // Podpora obou variant JSON:
-        //
-        // {
-        //   "words": [...]
-        // }
-        //
-        // nebo:
-        //
-        // [
-        //   {...},
-        //   {...}
-        // ]
-
-        const words =
-            Array.isArray(data)
-                ? data
-                : (
-                    Array.isArray(data.words)
-                        ? data.words
-                        : []
-                );
-
-
+        const data = await res.json();
+        const words = data.words || [];
+        
         if (words.length === 0) {
-
-            throw new Error(
-                "JSON neobsahuje žádná slovíčka."
-            );
+            activeItems = [];
+            return;
         }
 
+        const shuffled = [...words].sort(() => 0.5 - Math.random()).slice(0, count);
 
-        // Kolik slov skutečně použijeme?
-        const count =
-            Math.min(
-                requestedCount,
-                words.length
-            );
+        activeItems = shuffled.map((v, idx) => {
+            const article = v.artikel ? v.artikel.trim() : "";
+            const word = v.de ? v.de.trim() : "";
+            const deText = article ? `${article} ${word}` : word;
+            const czText = v.cz || "";
+            const color = getGenderColor(article);
 
-
-        // Náhodné zamíchání
-        const shuffled =
-            [...words]
-                .sort(
-                    () =>
-                        Math.random() - 0.5
-                )
-                .slice(
-                    0,
-                    count
-                );
-
-
-        // Vytvoření položek
-        activeItems =
-            shuffled.map(
-                (word, index) => {
-
-                    const deText =
-                        word.artikel
-                            ? `${word.artikel} ${word.de}`
-                            : (
-                                word.de || ""
-                            );
-
-
-                    const czText =
-                        word.cz || "";
-
-
-                    const displayText =
-                        lang === 'de'
-                            ? deText
-                            : czText;
-
-
-                    return {
-
-                        id:
-                            'vocab_' +
-                            index,
-
-                        text:
-                            displayText,
-
-                        fullName:
-                            displayText,
-
-                        // Slovo není vyřazené
-                        disabled:
-                            false,
-
-                        // Pro případné další použití
-                        de:
-                            deText,
-
-                        cz:
-                            czText
-
-                    };
-
-                }
-            );
-
-
-        totalVocabCount =
-            activeItems.length;
-
-
-        selectedItemIndex = null;
-
-
-        console.log(
-            "📚 Načteno slov:",
-            totalVocabCount
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "❌ Chyba při načítání slovíček:",
-            error
-        );
-
-
+            return {
+                id: 'vocab_' + idx,
+                text: lang === 'de' ? deText : czText,
+                fullName: lang === 'de' ? deText : czText,
+                disabled: false,
+                color: lang === 'de' ? color : '#0f172a',
+                artikel: article,
+                word: word
+            };
+        });
+        totalVocabCount = activeItems.length;
+    } catch (e) {
         activeItems = [];
-        totalVocabCount = 0;
-
-
-        alert(
-            `Slovní zásobu se nepodařilo načíst.\n\n` +
-            `Učebnice: ${ucebnice}\n` +
-            `Lekce: ${folder}\n\n` +
-            `Chyba:\n${error.message}`
-        );
     }
 
-
     updateVocabTrackerUI();
-
     renderList();
-
     drawWheel();
 };
-
-
-// ============================================================
-// UKAZATEL SKÓRE
-// ============================================================
 
 function updateVocabTrackerUI() {
-
-    const remaining =
-        activeItems.filter(
-            item => !item.disabled
-        ).length;
-
-
-    const remainingElem =
-        document.getElementById(
-            'wordsLeftCount'
-        );
-
-
-    const scoreElem =
-        document.getElementById(
-            'scoreText'
-        );
-
-
-    if (remainingElem) {
-
-        remainingElem.innerText =
-            `${remaining} / ${totalVocabCount}`;
-    }
-
-
-    if (scoreElem) {
-
-        scoreElem.innerText =
-            `${correctAnswersCount} : ${wrongAnswersCount}`;
-    }
+    const remaining = activeItems.filter(i => !i.disabled).length;
+    const remainingElem = document.getElementById('wordsLeftCount');
+    const scoreElem = document.getElementById('scoreText');
+    if (remainingElem) remainingElem.innerText = `${remaining} / ${totalVocabCount}`;
+    if (scoreElem) scoreElem.innerText = `${correctAnswersCount} : ${wrongAnswersCount}`;
 }
-
-
-// ============================================================
-// POTVRZENÍ VYLOSOVANÉHO ŽÁKA
-// ============================================================
-
-window.confirmWinner = function() {
-
-    if (
-        selectedItemIndex !== null &&
-        currentTab === 'students'
-    ) {
-
-        toggleItem(
-            selectedItemIndex
-        );
-    }
-
-
-    closeModal();
-};
-
-
-// ============================================================
-// RICHTIG / FALSCH
-// ============================================================
-
-window.rateAnswer = function(isCorrect) {
-
-    if (currentTab !== 'vocab') {
-        return;
-    }
-
-
-    if (isCorrect) {
-
-        correctAnswersCount++;
-
-    } else {
-
-        wrongAnswersCount++;
-
-    }
-
-
-    // Vyřadíme právě vybrané slovíčko
-    if (
-        selectedItemIndex !== null &&
-        activeItems[selectedItemIndex]
-    ) {
-
-        activeItems[
-            selectedItemIndex
-        ].disabled = true;
-    }
-
-
-    updateVocabTrackerUI();
-
-    renderList();
-
-    drawWheel();
-
-
-    const remaining =
-        activeItems.filter(
-            item => !item.disabled
-        ).length;
-
-
-    // Konec hry
-    if (remaining === 0) {
-
-        showFinalScoreModal();
-
-    } else {
-
-        closeModal();
-    }
-};
-
-
-// ============================================================
-// FINÁLNÍ VÝSLEDEK
-// ============================================================
-
-function showFinalScoreModal() {
-
-    const actualTotal =
-        correctAnswersCount +
-        wrongAnswersCount;
-
-
-    const grade =
-        calculateGrade(
-            correctAnswersCount,
-            actualTotal
-        );
-
-
-    const modalIcon =
-        document.getElementById(
-            'modalIcon'
-        );
-
-
-    const modalSubtitle =
-        document.getElementById(
-            'modalSubtitle'
-        );
-
-
-    const winnerTextElem =
-        document.getElementById(
-            'winnerText'
-        );
-
-
-    if (modalIcon) {
-
-        modalIcon.innerText =
-            '🏆';
-    }
-
-
-    if (modalSubtitle) {
-
-        modalSubtitle.innerText =
-            'Spielende! Gesamtnote:';
-    }
-
-
-    document
-        .getElementById(
-            'studentModalControls'
-        )
-        ?.classList.add('hidden');
-
-
-    document
-        .getElementById(
-            'vocabModalControls'
-        )
-        ?.classList.add('hidden');
-
-
-    document
-        .getElementById(
-            'finalModalControls'
-        )
-        ?.classList.remove('hidden');
-
-
-    if (winnerTextElem) {
-
-        winnerTextElem.innerHTML = `
-
-            <div
-                style="
-                    font-size: 3rem;
-                    color: #059669;
-                    font-weight: 900;
-                    margin: 5px 0;
-                "
-            >
-                Note ${grade}
-            </div>
-
-            <div
-                style="
-                    font-size: 1.1rem;
-                    color: #475569;
-                    margin-top: 5px;
-                "
-            >
-                Richtig:
-                ${correctAnswersCount}
-                |
-                Falsch:
-                ${wrongAnswersCount}
-            </div>
-
-        `;
-    }
-
-
-    document
-        .getElementById(
-            'winnerModal'
-        )
-        ?.classList.remove('hidden');
-
-
-    playWinSound();
-}
-
-
-// ============================================================
-// ZNÁMKA
-// ============================================================
-
-function calculateGrade(correct, total) {
-
-    if (!total || total <= 0) {
-        return '5 ❌';
-    }
-
-
-    const ratio =
-        correct / total;
-
-
-    if (ratio >= 0.85) {
-        return '1 🥇';
-    }
-
-
-    if (ratio >= 0.67) {
-        return '2 🥈';
-    }
-
-
-    if (ratio >= 0.45) {
-        return '3 🥉';
-    }
-
-
-    if (ratio >= 0.25) {
-        return '4 📄';
-    }
-
-
-    return '5 ❌';
-}
-
-
-// ============================================================
-// PŘIDÁNÍ VLASTNÍ POLOŽKY
-// ============================================================
 
 window.addItem = function() {
+    const input = document.getElementById('newItemInput');
+    if (!input) return;
+    const val = input.value.trim();
+    if (!val) return;
 
-    const input =
-        document.getElementById(
-            'newItemInput'
-        );
+    let article = "";
+    let word = val;
+    if (val.toLowerCase().startsWith("der ")) { article = "der"; word = val.substring(4); }
+    else if (val.toLowerCase().startsWith("die ")) { article = "die"; word = val.substring(4); }
+    else if (val.toLowerCase().startsWith("das ")) { article = "das"; word = val.substring(4); }
 
+    const newItem = {
+        id: 'custom_' + Date.now(),
+        text: val,
+        fullName: val,
+        disabled: false,
+        color: getGenderColor(article)
+    };
 
-    if (!input) {
-        return;
-    }
-
-
-    const value =
-        input.value.trim();
-
-
-    if (!value) {
-        return;
-    }
-
-
-    activeItems.unshift({
-
-        id:
-            'custom_' +
-            Date.now(),
-
-        text:
-            value,
-
-        fullName:
-            value,
-
-        disabled:
-            false
-
-    });
-
-
+    activeItems.push(newItem);
     input.value = '';
-
-
     renderList();
-
     drawWheel();
-
-
-    if (currentTab === 'vocab') {
-
-        totalVocabCount =
-            activeItems.length;
-
-        updateVocabTrackerUI();
-    }
+    if (currentTab === 'vocab') updateVocabTrackerUI();
 };
-
-
-// ============================================================
-// SMAZÁNÍ POLOŽKY
-// ============================================================
 
 window.deleteItem = function(index) {
-
-    if (
-        index < 0 ||
-        index >= activeItems.length
-    ) {
-        return;
-    }
-
-
-    activeItems.splice(
-        index,
-        1
-    );
-
-
+    activeItems.splice(index, 1);
     renderList();
-
     drawWheel();
-
-
-    if (currentTab === 'vocab') {
-
-        totalVocabCount =
-            activeItems.length;
-
-        updateVocabTrackerUI();
-    }
+    if (currentTab === 'vocab') updateVocabTrackerUI();
 };
-
-
-// ============================================================
-// AKTIVACE / DEAKTIVACE
-// ============================================================
 
 window.toggleItem = function(index) {
-
-    const item =
-        activeItems[index];
-
-
-    if (!item) {
-        return;
-    }
-
-
-    // --------------------------------------------------------
-    // SLOVNÍ ZÁSOBA
-    // --------------------------------------------------------
+    const item = activeItems[index];
 
     if (currentTab === 'vocab') {
-
-        item.disabled =
-            !item.disabled;
-
-
+        item.disabled = !item.disabled;
         renderList();
-
         drawWheel();
-
         updateVocabTrackerUI();
-
         return;
     }
 
+    const classSelect = document.getElementById('classSelect');
+    const cleanClassName = classSelect ? classSelect.value.toLowerCase().replace(/[^a-z0-9]/g, '') : '';
+    let history = JSON.parse(localStorage.getItem(`ds_history_${cleanClassName}`)) || {};
 
-    // --------------------------------------------------------
-    // ŽÁCI
-    // --------------------------------------------------------
-
-    const classSelect =
-        document.getElementById(
-            'classSelect'
-        );
-
-
-    const className =
-        classSelect
-            ? classSelect.value
-            : 'unknown';
-
-
-    const cleanClassName =
-        className
-            .toLowerCase()
-            .replace(/[^a-z0-9]/g, '');
-
-
-    let history = {};
-
-
-    try {
-
-        history =
-            JSON.parse(
-                localStorage.getItem(
-                    `ds_history_${cleanClassName}`
-                )
-            ) || {};
-
-    } catch (error) {
-
-        history = {};
-    }
-
-
-    // Žák byl vyzkoušen → obnovit
     if (item.disabled) {
-
         item.disabled = false;
-
         item.lastTested = null;
-
-
-        if (history[item.id]) {
-
-            delete history[item.id];
-
-        }
-
-    }
-
-    // Žák nebyl vyzkoušen → označit
-    else {
-
-        const nowStr =
-            new Date()
-                .toLocaleDateString(
-                    'cs-CZ'
-                );
-
-
+        delete history[item.id];
+    } else {
+        const nowStr = new Date().toLocaleDateString('cs-CZ');
         item.disabled = true;
-
-        item.lastTested =
-            nowStr;
-
-
-        history[item.id] =
-            nowStr;
+        item.lastTested = nowStr;
+        history[item.id] = nowStr;
     }
-
-
-    localStorage.setItem(
-
-        `ds_history_${cleanClassName}`,
-
-        JSON.stringify(history)
-
-    );
-
+    localStorage.setItem(`ds_history_${cleanClassName}`, JSON.stringify(history));
 
     renderList();
-
     drawWheel();
 };
 
-
-// ============================================================
-// VYKRESLENÍ SEZNAMU
-// ============================================================
-
 function renderList() {
-
-    const container =
-        document.getElementById(
-            'itemList'
-        );
-
-
-    if (!container) {
-        return;
-    }
-
-
+    const container = document.getElementById('itemList');
+    if (!container) return;
     container.innerHTML = '';
 
+    activeItems.forEach((item, index) => {
+        const row = document.createElement('div');
+        row.className = `item-row ${item.disabled ? 'disabled' : ''}`;
+        
+        const dateBadge = (currentTab === 'students' && item.lastTested) 
+            ? `<span class="badge-date">🗓️ ${item.lastTested}</span>` 
+            : '';
 
-    activeItems.forEach(
-        (item, index) => {
+        const btnText = item.disabled ? '🔄 Obnovit' : (currentTab === 'students' ? '✔ Zkoušet' : 'Vyřadit');
+        const btnClass = item.disabled ? 'ds-btn-secondary' : 'ds-btn-danger';
 
-            const row =
-                document.createElement(
-                    'div'
-                );
-
-
-            row.className =
-                `item-row ${
-                    item.disabled
-                        ? 'disabled'
-                        : ''
-                }`;
-
-
-            const dateBadge =
-                (
-                    currentTab === 'students' &&
-                    item.lastTested
-                )
-                    ? `
-                        <span class="badge-date">
-                            🗓️ ${item.lastTested}
-                        </span>
-                      `
-                    : '';
-
-
-            let btnText;
-
-
-            if (item.disabled) {
-
-                btnText =
-                    '🔄 Wiederherstellen';
-
-            } else {
-
-                btnText =
-                    currentTab === 'students'
-                        ? '✔ Abfragen'
-                        : 'Entfernen';
-            }
-
-
-            const btnClass =
-                item.disabled
-                    ? 'ds-btn-secondary'
-                    : 'ds-btn-danger';
-
-
-            row.innerHTML = `
-
-                <div
-                    style="
-                        flex:1;
-                        overflow:hidden;
-                        text-overflow:ellipsis;
-                        white-space:nowrap;
-                    "
-                >
-
-                    <strong>
-                        ${item.text}
-                    </strong>
-
-                    ${dateBadge}
-
-                </div>
-
-
-                <div
-                    style="
-                        display:flex;
-                        gap:4px;
-                    "
-                >
-
-                    <button
-                        class="ds-btn ds-btn-sm ${btnClass}"
-                        onclick="toggleItem(${index})"
-                    >
-                        ${btnText}
-                    </button>
-
-
-                    <button
-                        class="btn-delete"
-                        title="Löschen"
-                        onclick="deleteItem(${index})"
-                    >
-                        🗑️
-                    </button>
-
-                </div>
-
-            `;
-
-
-            container.appendChild(
-                row
-            );
-
-        }
-    );
+        row.innerHTML = `
+            <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: ${item.color || '#0f172a'}; font-weight: 600;">
+                ${item.text}
+                ${dateBadge}
+            </div>
+            <div style="display:flex; gap:4px;">
+                <button class="ds-btn ds-btn-sm ${btnClass}" onclick="toggleItem(${index})">${btnText}</button>
+                <button class="ds-btn ds-btn-secondary ds-btn-sm" onclick="deleteItem(${index})"><i class="fas fa-trash"></i></button>
+            </div>
+        `;
+        container.appendChild(row);
+    });
 }
 
-
-// ============================================================
-// VYKRESLENÍ KOLA
-// ============================================================
-
 function drawWheel() {
+    const canvas = document.getElementById("canvas");
+    if (!canvas || !canvas.getContext) return;
 
-    const canvas =
-        document.getElementById(
-            "canvas"
-        );
+    const ctx = canvas.getContext("2d");
+    const availableItems = activeItems.filter(i => !i.disabled);
 
+    const cx = 180;
+    const cy = 180;
+    const outsideRadius = 160;
+    const insideRadius = 30;
 
-    if (
-        !canvas ||
-        !canvas.getContext
-    ) {
+    // Prostor, ve kterém se bude zobrazovat text
+    const textInnerRadius = insideRadius + 14;
+    const textOuterRadius = outsideRadius - 10;
+    const maxTextWidth = textOuterRadius - textInnerRadius;
+
+    ctx.clearRect(0, 0, 360, 360);
+
+    if (availableItems.length === 0) {
+        ctx.fillStyle = "#94a3b8";
+        ctx.beginPath();
+        ctx.arc(cx, cy, outsideRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "white";
+        ctx.font = "bold 14px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("Žádné položky!", cx, cy + 5);
         return;
     }
 
+    const arc = Math.PI / (availableItems.length / 2);
 
-    const ctx =
-        canvas.getContext(
-            "2d"
-        );
+    // Automaticky najde největší velikost písma,
+    // která se ještě vejde do prostoru výseče.
+    function fitFontSize(text, maxWidth, startSize = 11, minSize = 7.5) {
+        let size = startSize;
 
+        while (size > minSize) {
+            ctx.font = `bold ${size}px sans-serif`;
 
-    const availableItems =
-        activeItems.filter(
-            item => !item.disabled
-        );
+            if (ctx.measureText(text).width <= maxWidth) {
+                return size;
+            }
 
+            size -= 0.5;
+        }
 
-    const outsideRadius =
-        230;
+        return minSize;
+    }
 
+    availableItems.forEach((item, i) => {
+        const angle = startAngle + i * arc;
+        const sectorAngle = angle + arc / 2;
 
-    const textRadius =
-        160;
+        // ==========================================
+        // VÝSEČ
+        // ==========================================
 
-
-    const insideRadius =
-        45;
-
-
-    ctx.clearRect(
-        0,
-        0,
-        500,
-        500
-    );
-
-
-    // --------------------------------------------------------
-    // ŽÁDNÉ POLOŽKY
-    // --------------------------------------------------------
-
-    if (
-        availableItems.length === 0
-    ) {
-
-        ctx.fillStyle =
-            "#94a3b8";
-
+        ctx.fillStyle = sectorColors[i % sectorColors.length];
 
         ctx.beginPath();
 
         ctx.arc(
-            250,
-            250,
+            cx,
+            cy,
             outsideRadius,
-            0,
-            Math.PI * 2
+            angle,
+            angle + arc,
+            false
         );
 
+        ctx.arc(
+            cx,
+            cy,
+            insideRadius,
+            angle + arc,
+            angle,
+            true
+        );
+
+        ctx.closePath();
         ctx.fill();
 
 
-        ctx.fillStyle =
-            "white";
+        // ==========================================
+        // TEXT
+        // ==========================================
+
+        ctx.save();
+
+        // Umístění textu přibližně doprostřed výseče
+        const textRadius =
+            (textInnerRadius + textOuterRadius) / 2;
+
+        const tx =
+            cx + Math.cos(sectorAngle) * textRadius;
+
+        const ty =
+            cy + Math.sin(sectorAngle) * textRadius;
+
+        ctx.translate(tx, ty);
+
+        // Text bude vždy čitelný,
+        // nebude vzhůru nohama.
+        let rot = sectorAngle;
+
+        if (Math.cos(sectorAngle) < 0) {
+            rot += Math.PI;
+        }
+
+        ctx.rotate(rot);
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
 
 
-        ctx.font =
-            'bold 18px sans-serif';
+        // ==========================================
+        // NĚMECKÉ SLOVÍČKO
+        // der / die / das
+        //        slovo
+        // ==========================================
 
+        const isGermanVocab =
+            currentTab === "vocab" &&
+            item.artikel &&
+            item.word;
 
-        ctx.textAlign =
-            "center";
+        if (isGermanVocab) {
 
+            const article = item.artikel.trim();
+            const word = item.word.trim();
 
-        ctx.fillText(
-            "Keine verfügbaren Elemente!",
-            250,
-            255
-        );
+            // Velikost samotného slova podle délky
+            const wordFontSize =
+                fitFontSize(
+                    word,
+                    maxTextWidth,
+                    11,
+                    7.5
+                );
 
-
-        return;
-    }
-
-
-    const arc =
-        Math.PI /
-        (
-            availableItems.length / 2
-        );
-
-
-    availableItems.forEach(
-        (item, i) => {
-
-            const angle =
-                startAngle +
-                i * arc;
-
-
-            ctx.fillStyle =
-                sectorColors[
-                    i %
-                    sectorColors.length
-                ];
-
-
-            // Výseč
-            ctx.beginPath();
-
-            ctx.arc(
-                250,
-                250,
-                outsideRadius,
-                angle,
-                angle + arc,
-                false
-            );
-
-
-            ctx.arc(
-                250,
-                250,
-                insideRadius,
-                angle + arc,
-                angle,
-                true
-            );
-
-
-            ctx.fill();
-
-
-            // Text
-            ctx.save();
-
+            // Člen může být trochu menší
+            const articleFontSize =
+                Math.min(10, wordFontSize);
 
             ctx.fillStyle =
-                "white";
+                item.color || "white";
+
+            // Rozestup mezi řádky
+            const lineGap =
+                Math.max(
+                    5,
+                    wordFontSize * 0.45
+                );
+
+            const totalHeight =
+                articleFontSize +
+                lineGap +
+                wordFontSize;
 
 
-            const textAngle =
-                angle +
-                arc / 2;
-
-
-            ctx.translate(
-
-                250 +
-                Math.cos(textAngle) *
-                textRadius,
-
-                250 +
-                Math.sin(textAngle) *
-                textRadius
-
-            );
-
-
-            ctx.rotate(
-                textAngle +
-                Math.PI / 2
-            );
-
+            // ------------------------------
+            // ČLEN
+            // ------------------------------
 
             ctx.font =
-                'bold 15px sans-serif';
-
-
-            ctx.textAlign =
-                "center";
-
-
-            let displayStr =
-                item.text;
-
-
-            if (
-                displayStr.length > 16
-            ) {
-
-                displayStr =
-                    displayStr.substring(
-                        0,
-                        14
-                    ) +
-                    '..';
-            }
-
+                `bold ${articleFontSize}px sans-serif`;
 
             ctx.fillText(
-                displayStr,
+                article,
+                0,
+                -(
+                    totalHeight / 2 -
+                    articleFontSize / 2
+                )
+            );
+
+
+            // ------------------------------
+            // SLOVO
+            // ------------------------------
+
+            ctx.font =
+                `bold ${wordFontSize}px sans-serif`;
+
+            ctx.fillText(
+                word,
+                0,
+                totalHeight / 2 -
+                wordFontSize / 2
+            );
+
+
+        } else {
+
+            // ==========================================
+            // OSTATNÍ POLOŽKY
+            // ==========================================
+
+            const displayText =
+                item.text || "";
+
+            const fontSize =
+                fitFontSize(
+                    displayText,
+                    maxTextWidth,
+                    11,
+                    7.5
+                );
+
+            ctx.fillStyle =
+                item.color || "white";
+
+            ctx.font =
+                `bold ${fontSize}px sans-serif`;
+
+            ctx.fillText(
+                displayText,
                 0,
                 0
             );
-
-
-            ctx.restore();
-
         }
-    );
+
+        ctx.restore();
+    });
 }
 
-
-// ============================================================
-// SPUŠTĚNÍ KOLA
-// ============================================================
-
 window.spinWheel = function() {
-
-    if (isSpinning) {
-        return;
-    }
-
-
-    const availableItems =
-        activeItems.filter(
-            item => !item.disabled
-        );
-
-
-    if (
-        availableItems.length === 0
-    ) {
-        return;
-    }
-
+    if (isSpinning) return;
+    const availableItems = activeItems.filter(i => !i.disabled);
+    if (availableItems.length === 0) return;
 
     isSpinning = true;
+    const spinBtn = document.getElementById('spinBtn');
+    if (spinBtn) spinBtn.disabled = true;
 
+    const container = document.querySelector('.wheel-container');
+    container?.classList.add('fullscreen-spin');
+    document.body.classList.add('is-spinning');
 
-    const spinBtn =
-        document.getElementById(
-            'spinBtn'
-        );
+    const speedMultiplier = parseFloat(document.getElementById('speedRange')?.value) || 1.0;
 
-
-    if (spinBtn) {
-        spinBtn.disabled = true;
-    }
-
-
-    // Slovíčka rychleji
     if (currentTab === 'vocab') {
-
-        spinVelocity =
-            Math.random() *
-            0.40 +
-            0.70;
-
-
-        friction =
-            0.940 +
-            Math.random() *
-            0.010;
-
+        spinVelocity = (Math.random() * 0.40 + 0.70) * speedMultiplier;
+        friction = 0.940 + Math.random() * 0.010;
     } else {
-
-        // Žáci pomaleji
-        spinVelocity =
-            Math.random() *
-            0.20 +
-            0.35;
-
-
-        friction =
-            0.983 +
-            Math.random() *
-            0.005;
+        spinVelocity = (Math.random() * 0.20 + 0.35) * speedMultiplier;
+        friction = 0.983 + Math.random() * 0.005;
     }
-
 
     lastSoundSector = -1;
-
-
     animateWheel();
 };
 
-
-// ============================================================
-// ANIMACE
-// ============================================================
-
 function animateWheel() {
-
     spinVelocity *= friction;
-
     startAngle += spinVelocity;
-
 
     drawWheel();
 
-
-    const availableItems =
-        activeItems.filter(
-            item => !item.disabled
-        );
-
-
-    if (
-        availableItems.length > 0
-    ) {
-
-        const sectorSize =
-            Math.PI * 2 /
-            availableItems.length;
-
-
-        const currentSector =
-            Math.floor(
-                (
-                    (
-                        startAngle %
-                        (Math.PI * 2)
-                    ) +
-                    Math.PI * 2
-                ) %
-                (Math.PI * 2) /
-                sectorSize
-            );
-
-
-        if (
-            currentSector !==
-            lastSoundSector
-        ) {
-
+    const availableItems = activeItems.filter(i => !i.disabled);
+    if (availableItems.length > 0) {
+        const currentSector = Math.floor((startAngle % (Math.PI * 2)) / (Math.PI * 2 / availableItems.length));
+        if (currentSector !== lastSoundSector) {
             playTickSound();
-
-            lastSoundSector =
-                currentSector;
+            lastSoundSector = currentSector;
         }
     }
 
-
-    if (
-        spinVelocity < 0.002
-    ) {
-
+    if (spinVelocity < 0.002) {
         stopRotateWheel();
-
         return;
     }
 
-
-    animFrameId =
-        requestAnimationFrame(
-            animateWheel
-        );
+    animFrameId = requestAnimationFrame(animateWheel);
 }
-
-
-// ============================================================
-// ZASTAVENÍ KOLA
-// ============================================================
 
 function stopRotateWheel() {
-
-    if (animFrameId) {
-
-        cancelAnimationFrame(
-            animFrameId
-        );
-
-        animFrameId = null;
-    }
-
-
+    cancelAnimationFrame(animFrameId);
     isSpinning = false;
+    const spinBtn = document.getElementById('spinBtn');
+    if (spinBtn) spinBtn.disabled = false;
 
+    const container = document.querySelector('.wheel-container');
+    container?.classList.remove('fullscreen-spin');
+    document.body.classList.remove('is-spinning');
 
-    const spinBtn =
-        document.getElementById(
-            'spinBtn'
-        );
-
-
-    if (spinBtn) {
-        spinBtn.disabled = false;
-    }
-
-
-    const availableItems =
-        activeItems.filter(
-            item => !item.disabled
-        );
-
-
-    if (
-        availableItems.length === 0
-    ) {
-        return;
-    }
-
-
-    const arc =
-        Math.PI /
-        (
-            availableItems.length / 2
-        );
-
-
-    const degrees =
-        startAngle *
-        180 /
-        Math.PI +
-        90;
-
-
-    const arcd =
-        arc *
-        180 /
-        Math.PI;
-
-
-    const normalizedDegrees =
-        (
-            degrees % 360 +
-            360
-        ) % 360;
-
-
-    const index =
-        Math.floor(
-            (
-                360 -
-                normalizedDegrees
-            ) /
-            arcd
-        ) %
-        availableItems.length;
-
-
-    const winner =
-        availableItems[index];
-
-
-    selectedItemIndex =
-        activeItems.findIndex(
-            item =>
-                item.id === winner.id
-        );
-
-
-    if (
-        selectedItemIndex < 0
-    ) {
-
-        console.error(
-            "❌ Vylosovanou položku se nepodařilo najít."
-        );
-
-        return;
-    }
-
+    const availableItems = activeItems.filter(i => !i.disabled);
+    const arc = Math.PI / (availableItems.length / 2);
+    const degrees = startAngle * 180 / Math.PI + 90;
+    const arcd = arc * 180 / Math.PI;
+    const index = Math.floor((360 - degrees % 360) / arcd) % availableItems.length;
+    
+    const winner = availableItems[index];
+    selectedItemIndex = activeItems.findIndex(i => i.id === winner.id);
 
     playWinSound();
+    document.getElementById('modalIcon').innerText = '🎉';
+    document.getElementById('modalSubtitle').innerText = 'Vybráno:';
+    document.getElementById('winnerText').innerText = winner.fullName || winner.text;
 
+    document.getElementById('studentModalControls')?.classList.toggle('hidden', currentTab !== 'students');
+    document.getElementById('vocabModalControls')?.classList.toggle('hidden', currentTab !== 'vocab');
+    document.getElementById('finalModalControls')?.classList.add('hidden');
+    document.getElementById('skipModalControl')?.classList.toggle('hidden', currentTab !== 'vocab');
 
-    // --------------------------------------------------------
-    // MODAL
-    // --------------------------------------------------------
+    document.getElementById('winnerModal')?.classList.remove('hidden');
+    // Správa tlačítka pro přeskočení a limitu 2 pokusů
+    const skipBtn = document.getElementById('skipWordBtn');
+    const skipBadge = document.getElementById('skipCountBadge');
+    const remainingSkips = MAX_SKIPS - skippedWordsCount;
 
-    const modalIcon =
-        document.getElementById(
-            'modalIcon'
-        );
-
-
-    const modalSubtitle =
-        document.getElementById(
-            'modalSubtitle'
-        );
-
-
-    const winnerText =
-        document.getElementById(
-            'winnerText'
-        );
-
-
-    if (modalIcon) {
-
-        modalIcon.innerText =
-            '🎉';
+    if (skipBtn && skipBadge) {
+        skipBadge.innerText = `(${remainingSkips}/${MAX_SKIPS})`;
+        if (skippedWordsCount >= MAX_SKIPS) {
+            skipBtn.disabled = true;
+            skipBtn.style.opacity = '0.4';
+            skipBtn.style.cursor = 'not-allowed';
+        } else {
+            skipBtn.disabled = false;
+            skipBtn.style.opacity = '1';
+            skipBtn.style.cursor = 'pointer';
+        }
     }
-
-
-    if (modalSubtitle) {
-
-        modalSubtitle.innerText =
-            'Ausgewählt:';
-    }
-
-
-    if (winnerText) {
-
-        winnerText.innerText =
-            winner.fullName ||
-            winner.text;
-    }
-
-
-    const studentControls =
-        document.getElementById(
-            'studentModalControls'
-        );
-
-
-    const vocabControls =
-        document.getElementById(
-            'vocabModalControls'
-        );
-
-
-    const finalControls =
-        document.getElementById(
-            'finalModalControls'
-        );
-
-
-    studentControls?.classList.toggle(
-        'hidden',
-        currentTab !== 'students'
-    );
-
-
-    vocabControls?.classList.toggle(
-        'hidden',
-        currentTab !== 'vocab'
-    );
-
-
-    finalControls?.classList.add(
-        'hidden'
-    );
-
-
-    document
-        .getElementById(
-            'winnerModal'
-        )
-        ?.classList.remove(
-            'hidden'
-        );
 }
 
+window.confirmWinner = function() {
+    if (selectedItemIndex !== null && currentTab === 'students') {
+        toggleItem(selectedItemIndex);
+    }
+    closeModal();
+};
 
-// ============================================================
-// ZAVŘENÍ MODALU
-// ============================================================
-
-window.closeModal = function() {
-
-    document
-        .getElementById(
-            'winnerModal'
-        )
-        ?.classList.add(
-            'hidden'
-        );
-
-
-    // --------------------------------------------------------
-    // KONEC SLOVNÍ ZÁSOBY
-    // --------------------------------------------------------
-    //
-    // Po zavření výsledné obrazovky připravíme novou hru.
-    // --------------------------------------------------------
-
-    if (
-        currentTab === 'vocab' &&
-        activeItems.length > 0 &&
-        activeItems.every(
-            item => item.disabled
-        )
-    ) {
-
-        prepareVocabItems();
+window.rateAnswer = function(isCorrect) {
+    if (isCorrect) {
+        correctAnswersCount++;
+    } else {
+        wrongAnswersCount++;
     }
 
+    if (selectedItemIndex !== null && activeItems[selectedItemIndex]) {
+        activeItems[selectedItemIndex].disabled = true;
+    }
 
-    selectedItemIndex = null;
+    updateVocabTrackerUI();
+    renderList();
+    drawWheel();
+
+    const remaining = activeItems.filter(i => !i.disabled).length;
+    if (remaining === 0) {
+        showFinalScoreModal(); // Zobrazí finální okno se skóre přímo
+    } else {
+        closeModal();
+    }
+};window.skipWord = function() {
+    if (selectedItemIndex !== null && activeItems[selectedItemIndex]) {
+        activeItems[selectedItemIndex].disabled = true;
+    }
+
+    updateVocabTrackerUI();
+    renderList();
+    drawWheel();
+
+    const remaining = activeItems.filter(i => !i.disabled).length;
+    if (remaining === 0) {
+        showFinalScoreModal(); // Zobrazí finální okno se skóre přímo
+    } else {
+        closeModal();
+    }
+};
+
+function showFinalScoreModal() {
+    document.getElementById('modalIcon').innerText = '🏆';
+    document.getElementById('modalSubtitle').innerText = 'Spielende!';
+    document.getElementById('winnerText').innerHTML = `Richtig: ${correctAnswersCount} | Falsch: ${wrongAnswersCount}`;
+
+    document.getElementById('studentModalControls')?.classList.add('hidden');
+    document.getElementById('vocabModalControls')?.classList.add('hidden');
+    document.getElementById('skipModalControl')?.classList.add('hidden');
+    document.getElementById('finalModalControls')?.classList.remove('hidden');
+
+    document.getElementById('winnerModal')?.classList.remove('hidden');
+}
+
+window.closeModal = function() {
+    document.getElementById('winnerModal')?.classList.add('hidden');
+    
+    // Nová sada slovíček se připraví až po kliknutí na OK ve finálním okně
+    if (currentTab === 'vocab' && activeItems.filter(i => !i.disabled).length === 0) {
+        prepareVocabItems();
+    }
 };

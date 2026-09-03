@@ -1,329 +1,439 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="cs">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Glücksrad – DeutschStudio</title>
-    
-    <!-- Jednotný design systém DeutschStudio -->
-    <link rel="stylesheet" href="../../css/style.css">
-    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #1f4e79;
+            --der-color: #1e40af;
+            --die-color: #dc2626;
+            --das-color: #059669;
+        }
+        * { box-sizing: border-box; }
+
+        html, body {
+            width: 100%;
+            min-height: 100%;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        .ds-panel {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            width: min(100%, 1100px);
+            margin: 0 auto 20px auto;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .ds-title {
+            margin: 0 0 15px 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .flex-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+        .ds-label {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+        }
+        .ds-select, .ds-input {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .ds-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ds-btn-primary { background-color: var(--primary); }
+        .ds-btn-success { background-color: #059669; }
+        .ds-btn-danger { background-color: #dc2626; }
+        .ds-btn-secondary { background-color: #64748b; }
+        .ds-btn-sm { padding: 4px 8px; font-size: 0.8rem; }
+        
+        .main-layout {
+            width: min(100%, 1100px);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        @media(max-width: 768px) {
+            body { padding: 10px; }
+            .main-layout { grid-template-columns: 1fr; }
+            .ds-panel { padding: 14px; }
+        }
         .wheel-container {
             position: relative;
-            width: 400px;
-            height: 400px;
-            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
         }
 
+        /* =====================================================
+           FOCUS / FULLSCREEN REŽIM KOLA
+           Kolo se vejde vždy celé do obrazovky.
+           ===================================================== */
+        .wheel-container.fullscreen-spin {
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: none !important;
+            z-index: 2500 !important;
+            margin: 0 !important;
+            padding: 24px !important;
+            border: none !important;
+            border-radius: 0 !important;
+            background: rgba(255, 255, 255, 0.98) !important;
+            box-shadow: none !important;
+            transform: none !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            overflow: hidden !important;
+        }
+
+        .wheel-container.fullscreen-spin #canvas {
+            width: min(82vh, 82vw) !important;
+            height: min(82vh, 82vw) !important;
+            max-width: 90vw !important;
+            max-height: 82vh !important;
+        }
+
+        .wheel-container.fullscreen-spin .wheel-pointer {
+            top: calc(50% - min(41vh, 41vw) - 3px);
+        }
+
+        .wheel-container.fullscreen-spin #spinBtn {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(360px, 70vw) !important;
+            margin: 0 !important;
+        }
+
+        .fullscreen-exit {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            z-index: 20;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 14px;
+            background: #0f172a;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,.18);
+        }
+
+        .fullscreen-exit:hover {
+            background: #334155;
+        }
+
+        /* Ztmavení pozadí pod kolem při otáčení pro dokonalý fokus */
+        body.is-spinning::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            z-index: 1500;
+            backdrop-filter: blur(4px);
+        }
         #canvas {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
         }
-
         .wheel-pointer {
             position: absolute;
-            top: -12px;
+            top: 10px;
             left: 50%;
             transform: translateX(-50%);
             width: 0;
             height: 0;
-            border-left: 18px solid transparent;
-            border-right: 18px solid transparent;
-            border-top: 32px solid #dc2626;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 22px solid #ef4444;
             z-index: 10;
-            filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3));
         }
-
-        .item-list-container {
-            max-height: 380px;
-            overflow-y: auto;
+        .list-container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
             border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 10px;
-            background: #f8fafc;
+            max-height: 500px;
+            display: flex;
+            flex-direction: column;
         }
-
+        .item-list {
+            overflow-y: auto;
+            flex-grow: 1;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
         .item-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 8px 12px;
-            margin-bottom: 6px;
-            background: white;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-weight: 600;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.9rem;
         }
-
         .item-row.disabled {
             opacity: 0.5;
-            background: #f1f5f9;
             text-decoration: line-through;
+            background: #f1f5f9;
         }
-
         .badge-date {
             font-size: 0.75rem;
-            color: #64748b;
-            margin-left: 8px;
-            font-weight: normal;
-        }
-
-        .tab-btn {
-            padding: 10px 20px;
-            font-weight: bold;
-            border-radius: 8px 8px 0 0;
-            border: none;
-            cursor: pointer;
             background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
             color: #475569;
         }
-
-        .tab-btn.active {
-            background: #1f4e79;
-            color: white;
-        }
-
-        /* Nový vylepšený design modálního okna a tlačítek */
-        .modal-overlay {
+        .hidden { display: none !important; }
+        
+        /* Modal */
+        .modal {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(4px);
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
             display: flex;
+            justify-content: center;
             align-items: center;
-            justify-content: center;
-            z-index: 999;
+            z-index: 2000;
         }
-
-        .modal-overlay.hidden {
-            display: none !important;
-        }
-
-        .modal-card {
-            background: #ffffff;
-            padding: 30px 40px;
-            border-radius: 16px;
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
             text-align: center;
-            max-width: 420px;
+            max-width: 400px;
             width: 90%;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            animation: modalScaleUp 0.2s ease-out;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
-
-        @keyframes modalScaleUp {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        .modal-card .result-name {
-            font-size: 24px;
-            font-weight: 700;
-            color: #111111;
-            margin-bottom: 25px;
-            word-break: break-word;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 24px;
-        }
-
-        .modal-buttons button {
-            padding: 10px 18px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
+        .tab-btn {
+            background: #e2e8f0;
             border: none;
-            transition: all 0.2s ease;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 8px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 6px;
         }
-
-        /* Výrazná tlačítka pro modální okno */
-        .modal-btn-primary {
-            background-color: #2e7d32;
+        .tab-btn.active {
+            background: var(--primary);
             color: white;
-            box-shadow: 0 4px 6px rgba(46, 125, 50, 0.2);
-        }
-
-        .modal-btn-primary:hover {
-            background-color: #1b5e20;
-            transform: translateY(-1px);
-        }
-
-        .modal-btn-secondary {
-            background-color: #f0f0f0;
-            color: #444444;
-            border: 1px solid #dcdcdc;
-        }
-
-        .modal-btn-secondary:hover {
-            background-color: #e4e4e4;
-            transform: translateY(-1px);
-        }
-
-        .modal-btn-danger {
-            background-color: #d32f2f;
-            color: white;
-            box-shadow: 0 4px 6px rgba(211, 47, 47, 0.2);
-        }
-
-        .modal-btn-danger:hover {
-            background-color: #c62828;
-            transform: translateY(-1px);
-        }
-
-        .hidden {
-            display: none !important;
         }
     </style>
 </head>
-<body class="bg-slate-100 p-6">
+<body>
 
     <div class="ds-panel">
-        <h2 class="ds-title">🎡 Glücksrad</h2>
-
-        <!-- Přepínání záložek: Žáci vs. Slovíčka -->
-        <div class="flex gap-2 border-b border-slate-300 mt-4">
-            <button id="tabStudentsBtn" class="tab-btn active" onclick="switchTab('students')">
-                👨‍🎓 Schüler der Klasse
-            </button>
-            <button id="tabVocabBtn" class="tab-btn" onclick="switchTab('vocab')">
-                📚 Wortschatz der Lektion
-            </button>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2 class="ds-title"><i class="fas fa-dharmachakra"></i> Glücksrad (Kolo štěstí)</h2>
+            <a href="../../index.html" class="ds-btn ds-btn-secondary ds-btn-sm"><i class="fas fa-home"></i> Zurück zum Dashboard</a>
         </div>
 
-        <!-- Ovládací prvky pro REŽIM ŽÁCI -->
-        <div id="controlsStudents" class="flex flex-wrap gap-4 mt-4">
-            <label class="ds-label">
-                Klasse:
-                <select id="classSelect" class="ds-select" onchange="loadClassData()">
-                <option value="7A">7.A</option>
-                <option value="7B">7.B</option>
-                <option value="7C">7.C</option>
-                <option value="8A">8.A</option>
-                <option value="8B">8.B</option>
-                <option value="8C">8.C</option>
-                <option value="9A">9.A</option>
-                <option value="9B">9.B</option>
-                <option value="9C">9.C</option>
-                </select>
-            </label>
-        </div>
-
-        <!-- Ovládací prvky pro REŽIM SLOVÍČKA -->
-        <div id="controlsVocab" class="flex flex-wrap gap-4 mt-4 hidden">
-            <label class="ds-label">
-                Sprache am Rad:
-                <select id="langSelect" class="ds-select" onchange="prepareVocabItems()">
-                    <option value="de">Deutsch (DE)</option>
-                    <option value="cz">Tschechisch (CZ)</option>
-                </select>
-            </label>
-
-            <label class="ds-label">
-                Anzahl der Wörter:
-                <select id="countSelect" class="ds-select" onchange="prepareVocabItems()">
-                    <option value="5">5 Wörter</option>
-                    <option value="10">10 Wörter</option>
-                    <option value="15" selected>15 Wörter</option>
-                    <option value="20">20 Wörter</option>
-                </select>
-            </label>
-
-            <!-- Skóre vyhodnocení -->
-            <div id="vocabScoreTracker" class="flex items-center gap-4 bg-slate-100 px-4 py-2 rounded-lg border border-slate-300 font-bold text-slate-700">
-                <span>Verbleibend: <strong id="wordsLeftCount" class="text-blue-600">0 / 0</strong></span>
-                <span>|</span>
-                <span>Punkte (Richtig : Falsch): <strong id="scoreText" class="text-emerald-600">0 : 0</strong></span>
-            </div>
-        </div>
-
-        <!-- Hlavní grid: Kolo + Seznam -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6 items-start">
-            
-          <!-- Levý sloupec: Kolo štěstí -->
-            <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-                <div class="wheel-container" style="width: 500px; height: 500px; position: relative;">
-                    <div style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 36px solid #dc2626; z-index: 10; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3);"></div>
-                    <canvas id="canvas" width="500" height="500" style="width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);"></canvas>
-                </div>
-                
-                <!-- Obrovské, vycentrované tlačítko hned pod kolem -->
-                <button id="spinBtn" onclick="spinWheel()" style="margin-top: 24px; background-color: #2e7d32; color: white; font-size: 26px; font-weight: 900; padding: 18px 48px; border-radius: 16px; border: none; cursor: pointer; box-shadow: 0 10px 20px rgba(46, 125, 50, 0.4); transition: all 0.2s ease; letter-spacing: 1px;">
-                    🎰 Rad drehen!
-                </button>
+        <div class="flex-wrap" style="margin-top: 15px;">
+            <div style="display: flex; gap: 5px;">
+                <button id="tabStudentsBtn" class="tab-btn active" onclick="switchTab('students')">👨‍🎓 Schüler (žáci)</button>
+                <button id="tabVocabBtn" class="tab-btn" onclick="switchTab('vocab')">📚 Wortschatz (Slovíčka) </button>
             </div>
 
-            <!-- Pravý sloupec: Seznam položek -->
-            <div>
-                <h3 id="listTitle" class="font-bold text-slate-700 mb-2">Klassenliste / Liste der Schüler:</h3>
-                
-                <div class="flex gap-2 mb-3">
-                    <input type="text" id="newItemInput" placeholder="Eigenen Namen / Begriff hinzufügen..." class="ds-select flex-1" onkeypress="if(event.key==='Enter') addItem()">
-                    <button class="ds-btn ds-btn-success" onclick="addItem()">+ Hinzufügen</button>
-                </div>
-
-                <div id="itemList" class="item-list-container">
-                    <!-- Položky se načtou dynamicky -->
-                </div>
+            <!-- Ovládání pro žáky -->
+            <div id="controlsStudents" class="flex-wrap">
+                <label class="ds-label">
+                    Klasse:
+                    <select id="classSelect" class="ds-select" onchange="loadClassData()">
+                        <option value="7A">7.A</option>
+                        <option value="7B">7.B</option>
+                        <option value="7C">7.C</option>
+                        <option value="8A">8.A</option>
+                        <option value="8B">8.B</option>
+                        <option value="8C">8.C</option>
+                        <option value="9A">9.A</option>
+                        <option value="9B">9.B</option>
+                    </select>
+                </label>
             </div>
-        </div>
 
-        <div class="mt-8 border-t pt-4">
-            <button class="ds-btn ds-btn-secondary" onclick="window.location.href='../../index.html'">
-                🏠 Zurück zum Dashboard
-            </button>
+            <!-- Ovládání pro slovíčka -->
+            <div id="controlsVocab" class="flex-wrap hidden">
+                <label class="ds-label">
+                    Jazyk:
+                    <select id="langSelect" class="ds-select" onchange="prepareVocabItems()">
+                        <option value="de">Německy (Artikel + DE)</option>
+                        <option value="cz">Česky (CZ)</option>
+                    </select>
+                </label>
+                <label class="ds-label">
+                    Počet slov:
+                    <select id="countSelect" class="ds-select" onchange="prepareVocabItems()">
+                        <option value="10">10 slov</option>
+                        <option value="15" selected>15 slov</option>
+                        <option value="20">20 slov</option>
+                        <option value="5">5 slov</option>
+                    </select>
+                </label>
+            </div>
+
+            <!-- Posuvník rychlosti -->
+            <label class="ds-label" style="margin-left: auto;">
+                Rychlost kola:
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="range" id="speedRange" min="0.5" max="2.5" step="0.1" value="1.0">
+                    <span id="speedValue" style="font-weight: bold; color: var(--primary);">1.0x</span>
+                </div>
+            </label>
         </div>
     </div>
 
-    <!-- MODÁLNÍ OKNO PRO VÝSLEDEK / ZKOUŠENÍ -->
-    <div id="winnerModal" class="modal-overlay hidden">
-        <div class="modal-card">
-            <div id="modalIcon" style="font-size: 3.5rem;">🎉</div>
-            <div id="modalSubtitle" class="text-slate-500 font-bold uppercase tracking-wider text-sm mt-2">Ausgewählt:</div>
-            <div id="winnerText" class="result-name"></div>
+    <div class="main-layout">
+        <!-- Kolo štěstí -->
+        <div class="wheel-container">
+            <div class="wheel-pointer"></div>
+            <button id="fullscreenBtn" class="fullscreen-exit" type="button" onclick="toggleWheelFullscreen()" title="Režim celé obrazovky">
+                <i class="fas fa-expand"></i> Celá obrazovka
+            </button>
+            <canvas id="canvas" width="360" height="360" onclick="spinWheel()"></canvas>
+            <button id="spinBtn" class="ds-btn ds-btn-primary" style="margin-top: 15px; width: 100%;" onclick="spinWheel()">
+                <i class="fas fa-play"></i> Rad drehen!
+            </button>
+        </div>
 
-            <!-- 1. Tlačítka PRO ŽÁKY (Zkoušení) - opraveno do němčiny s novým stylem -->
-            <div id="studentModalControls" class="modal-buttons">
-                <button class="modal-btn-primary" onclick="confirmWinner()">
-                    ✓ Versuch eintragen & schließen
-                </button>
-                <button class="modal-btn-secondary" onclick="closeModal()">
-                    Ohne Eintrag schließen
-                </button>
+        <!-- Seznam položek -->
+        <div class="list-container">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="listTitle" style="margin: 0; font-size: 1.1rem;">Seznam:</h3>
+                <div id="vocabScoreTracker" class="hidden" style="font-weight: bold; font-size: 0.9rem; color: #0f172a;">
+                    Zbývá: <span id="wordsLeftCount">0</span> | Skóre: <span id="scoreText">0 : 0</span>
+                </div>
             </div>
 
-            <!-- 2. Tlačítka PRO SLOVÍČKA (Hodnocení) -->
-            <div id="vocabModalControls" class="modal-buttons hidden">
-                <button class="modal-btn-primary" onclick="rateAnswer(true)">
-                    ✓ Richtig (+1)
-                </button>
-                <button class="modal-btn-danger" onclick="rateAnswer(false)">
-                    ✕ Falsch (0)
-                </button>
+            <!-- Vložení nového žáka / položky -->
+            <div style="display: flex; gap: 8px; margin-top: 12px;">
+                <input type="text" id="newItemInput" class="ds-input" placeholder="Přidat položku..." style="flex: 1;" onkeypress="if(event.key==='Enter') addItem()">
+                <button class="ds-btn ds-btn-success ds-btn-sm" onclick="addItem()"><i class="fas fa-plus"></i> Přidat</button>
             </div>
 
-            <!-- 3. Tlačítko pro Konec zkoušení slovíček (Vyhodnocení známky) -->
-            <div id="finalModalControls" class="modal-buttons hidden">
-                <button class="modal-btn-primary" onclick="closeModal()">
-                    ✕ Schließen und beenden
-                </button>
+            <div id="itemList" class="item-list"></div>
+        </div>
+    </div>
+
+    <!-- Modální okno po roztočení -->
+    <div id="winnerModal" class="modal hidden">
+        <div class="modal-content">
+            <div id="modalIcon" style="font-size: 3rem; margin-bottom: 10px;">🎉</div>
+            <div id="modalSubtitle" style="font-weight: 600; color: #64748b; margin-bottom: 5px;">Vybráno:</div>
+            <div id="winnerText" style="font-size: 1.5rem; font-weight: 700; color: #0f172a; margin-bottom: 20px;"></div>
+
+            <!-- Ovládání pro žáky -->
+            <div id="studentModalControls" class="flex" style="justify-content: center; gap: 10px;">
+                <button class="ds-btn ds-btn-success" onclick="confirmWinner()"><i class="fas fa-check"></i> Potvrdit a vyřadit</button>
+                <button class="ds-btn ds-btn-secondary" onclick="closeModal()">Zavřít</button>
+            </div>
+
+            <!-- Ovládání pro slovíčka -->
+            <div id="vocabModalControls" class="flex hidden" style="justify-content: center; gap: 10px; margin-bottom: 10px;">
+                <button class="ds-btn ds-btn-success" onclick="rateAnswer(true)"><i class="fas fa-check"></i> Richtig</button>
+                <button class="ds-btn ds-btn-danger" onclick="rateAnswer(false)"><i class="fas fa-times"></i> Falsch</button>
+            </div>
+            <div id="skipModalControl" class="flex hidden" style="justify-content: center;">
+    <button id="skipWordBtn" class="ds-btn ds-btn-secondary" onclick="skipWord()">
+        <i class="fas fa-forward"></i> Überspringen (Přeskočit) <span id="skipCountBadge" style="font-size: 0.8rem; margin-left: 5px;">(2/2)</span>
+    </button>
+</div>
+
+            <!-- Finální tlačítka -->
+            <div id="finalModalControls" class="flex hidden" style="justify-content: center;">
+                <button class="ds-btn ds-btn-primary" onclick="closeModal()">OK</button>
             </div>
         </div>
     </div>
 
-    <!-- Načtení opravené logiky Kola štěstí -->
+    <script>
+        // Dynamická aktualizace textu posuvníku rychlosti
+        document.getElementById('speedRange')?.addEventListener('input', (e) => {
+            document.getElementById('speedValue').innerText = e.target.value + 'x';
+        });
+    </script>
+    <script>
+        // =====================================================
+        // Režim soustředění / fullscreen kola
+        // =====================================================
+        function toggleWheelFullscreen() {
+            const wheel = document.querySelector('.wheel-container');
+            const btn = document.getElementById('fullscreenBtn');
+            if (!wheel) return;
+
+            const active = wheel.classList.toggle('fullscreen-spin');
+            document.body.classList.toggle('wheel-focus-mode', active);
+
+            if (btn) {
+                btn.innerHTML = active
+                    ? '<i class="fas fa-compress"></i> Zavřít'
+                    : '<i class="fas fa-expand"></i> Celá obrazovka';
+            }
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                const wheel = document.querySelector('.wheel-container');
+                if (wheel?.classList.contains('fullscreen-spin')) {
+                    toggleWheelFullscreen();
+                }
+            }
+        });
+
+        document.getElementById('speedRange')?.addEventListener('input', (e) => {
+            document.getElementById('speedValue').innerText = e.target.value + 'x';
+        });
+    </script>
     <script src="wheel.js"></script>
 </body>
 </html>
